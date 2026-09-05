@@ -126,3 +126,11 @@ Repository validator ограничивает размер `SKILL.md`, пров�
 - `../plugins/<service>/README.md` — capability boundary конкретного plugin;
 - `../plugins/<service>/references/` — volatile API facts;
 - `../plugins/<service>/skills/*/SKILL.md` — task-specific workflow contract.
+
+## 10. Исполняемая граница consequential write
+
+Owning Direct, Metrika и Webmaster helpers используют `yandex-ai-approval/v2`: exact operation, target, authenticated-principal binding, cardinality и safety capabilities входят в один approval-bound envelope. Cardinality `UNKNOWN` считается fail-closed bulk-risk; repository threshold `20` является внутренней политикой безопасности, а не ограничением Yandex API. После exact approval bulk/unknown execution требует отдельного scale acknowledgement `--ack-bulk` там, где owning surface допускает такую cardinality.
+
+После transport успешный write возвращает `yandex-ai-execution/v1`. В текущем P0 verification capability — `RESPONSE_ONLY`, state — `UNVERIFIED`; rollback — `NOT_AVAILABLE`. Архитектура поэтому разделяет `EXECUTED` и `VERIFIED`: наличие API response не доказывает read-back финального состояния.
+
+Later-turn human approval остаётся orchestration/host policy. Standalone CLI проверяет exact digest и scale gate, но сам по себе не доказывает, что preview был показан человеку и approval был дан именно в последующем разговорном ходе.

@@ -103,6 +103,29 @@ class DocumentationUXGovernanceContractTests(unittest.TestCase):
         self.assertIn("Wordstat API в составе Yandex Search API v2", ru)
         self.assertIn("Wordstat API within Yandex Search API v2", en)
 
+    def test_executable_write_safety_v2_is_documented_truthfully(self):
+        required_tokens = (
+            "yandex-ai-approval/v2",
+            "--ack-bulk",
+            "yandex-ai-execution/v1",
+            "RESPONSE_ONLY",
+            "NOT_AVAILABLE",
+        )
+        for filename in ("docs/PLUGIN_STANDARD.md", "docs/PLUGIN_STANDARD.en.md"):
+            text = self._read(filename)
+            with self.subTest(filename=filename):
+                for token in required_tokens:
+                    self.assertIn(token, text)
+
+        ru = self._read("docs/PLUGIN_STANDARD.md").lower()
+        en = self._read("docs/PLUGIN_STANDARD.en.md").lower()
+        self.assertIn("standalone cli", ru)
+        self.assertIn("standalone cli", en)
+        self.assertIn("не может доказать", ru)
+        self.assertIn("cannot prove", en)
+        self.assertIn("позднем разговорном ходе", ru)
+        self.assertIn("later conversational turn", en)
+
     def test_docs_release_does_not_change_plugin_or_marketplace_versions(self):
         expected_by_marketplace_name = {
             marketplace_name: version

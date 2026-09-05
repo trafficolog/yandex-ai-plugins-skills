@@ -48,6 +48,7 @@ class TestMetrikaApi(unittest.TestCase):
         envelope = approval_envelope(
             method="POST",
             path="counter/123/goals",
+            token="secret",
             query=None,
             body=body,
         )
@@ -75,6 +76,7 @@ class TestMetrikaApi(unittest.TestCase):
                     body={"goal": {"name": "Lead"}},
                     execute=True,
                     approve="0" * 64,
+                    ack_bulk=True,
                 )
         request_json.assert_not_called()
 
@@ -83,6 +85,7 @@ class TestMetrikaApi(unittest.TestCase):
         envelope = approval_envelope(
             method="POST",
             path="counter/123/goals",
+            token="secret",
             query=None,
             body=body,
         )
@@ -95,14 +98,16 @@ class TestMetrikaApi(unittest.TestCase):
                 body=body,
                 execute=True,
                 approve=approve,
+                ack_bulk=True,
             )
         request_json.assert_called_once()
-        self.assertEqual(result, {"goal": {"id": 7}})
+        self.assertEqual(result["result"], {"goal": {"id": 7}})
+        self.assertEqual(result["schema"], "yandex-ai-execution/v1")
 
     def test_path_change_invalidates_approval(self):
         body = {"goal": {"name": "Lead"}}
         approve = preview_id(approval_envelope(
-            method="POST", path="counter/123/goals", query=None, body=body
+            method="POST", path="counter/123/goals", token="secret", query=None, body=body
         ))
         with patch("scripts.ym_api.request_json") as request_json:
             with self.assertRaises(ValueError):
@@ -121,6 +126,7 @@ class TestMetrikaApi(unittest.TestCase):
         approve = preview_id(approval_envelope(
             method="POST",
             path="counter/123/goals",
+            token="secret",
             query={"lang": "ru"},
             body=body,
         ))
@@ -141,6 +147,7 @@ class TestMetrikaApi(unittest.TestCase):
         approve = preview_id(approval_envelope(
             method="POST",
             path="counter/123/goals",
+            token="secret",
             query=None,
             body={"goal": {"name": "Lead"}},
         ))
@@ -187,6 +194,7 @@ class TestMetrikaApi(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertTrue(captured["execute"])
         self.assertEqual(captured["approve"], "a" * 64)
+        self.assertFalse(captured["ack_bulk"])
 
 
 if __name__ == "__main__":

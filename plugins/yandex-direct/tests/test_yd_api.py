@@ -29,8 +29,46 @@ class TestYandexDirectClient(unittest.TestCase):
         self.assertTrue(preview["dry_run"])
         self.assertEqual(preview["headers"]["Authorization"], "Bearer ***REDACTED***")
         self.assertEqual(preview["body"]["method"], "update")
+        self.assertEqual(preview["approval_schema"], "yandex-ai-approval/v2")
+        self.assertEqual(preview["cardinality"]["items"], 1)
+        self.assertEqual(preview["safety"]["verification"], "RESPONSE_ONLY")
+        self.assertEqual(preview["safety"]["rollback"], "NOT_AVAILABLE")
         self.assertEqual(preview["preview_id"], preview_id(client.approval_envelope("campaigns", "update", {"Campaigns": [{"Id": 123}]})))
         self.assertNotIn("secret-token", str(client.approval_envelope("campaigns", "update", {})))
+
+    def test_v2_envelope_binds_target_principal_and_scale(self):
+        client = YandexDirectClient("secret-token", client_login="client-a")
+        envelope = client.approval_envelope(
+            "campaigns", "update", {"Campaigns": [{"Id": 1}, {"Id": 2}]}
+        )
+        self.assertEqual(envelope["schema"], "yandex-ai-approval/v2")
+        self.assertEqual(envelope["target"]["client_login"], "client-a")
+        self.assertIn("auth_principal_binding", envelope["target"])
+        self.assertEqual(envelope["cardinality"]["items"], 2)
+        self.assertFalse(envelope["cardinality"]["bulk"])
+        self.assertNotIn("secret-token", str(envelope))
+
+    def test_v1_digest_cannot_authorize_v2_execution(self):
+        client = YandexDirectClient("token", client_login="client")
+        params = {"Campaigns": [{"Id": 123}]}
+        legacy = {
+            "schema": "yandex-ai-approval/v1",
+            "plugin": "yandex-direct",
+            "operation": "campaigns.update",
+            "method": "POST",
+            "target": {
+                "environment": "production",
+                "client_login": "client",
+                "auth_principal_hmac_sha256": yd_api.auth_principal_binding("token"),
+            },
+            "url": client.endpoint("campaigns"),
+            "body": client.body("update", params),
+            "artifacts": [],
+        }
+        with patch("scripts.yd_api._http.request_json", return_value=({}, {})) as request_json:
+            with self.assertRaises(ValueError):
+                client.request("campaigns", "update", params, approve=preview_id(legacy))
+        request_json.assert_not_called()
 
     def test_write_execute_requires_approval_before_transport(self):
         client = YandexDirectClient("token", client_login="client")
@@ -60,6 +98,40 @@ class TestYandexDirectClient(unittest.TestCase):
             result = client.request("campaigns", "update", params, approve=approve)
         request_json.assert_called_once()
         self.assertEqual(result["result"], api_payload)
+
+    def test_bulk_write_needs_ack_before_transport(self):
+        client = YandexDirectClient("token", client_login="client")
+        params = {"Campaigns": [{"Id": i} for i in range(21)]}
+        approve = preview_id(client.approval_envelope("campaigns", "update", params))
+        with patch("scripts.yd_api._http.request_json", return_value=({}, {})) as request_json:
+            with self.assertRaisesRegex(ValueError, "ack-bulk"):
+                client.request("campaigns", "update", params, approve=approve)
+        request_json.assert_not_called()
+
+    def test_unknown_scale_needs_ack_before_transport(self):
+        client = YandexDirectClient("token")
+        params = {"OpaqueMutation": {"Id": 1}}
+        approve = preview_id(client.approval_envelope("strategies", "update", params))
+        with patch("scripts.yd_api._http.request_json", return_value=({}, {})) as request_json:
+            with self.assertRaisesRegex(ValueError, "ack-bulk"):
+                client.request("strategies", "update", params, approve=approve)
+        request_json.assert_not_called()
+
+    def test_write_returns_execution_receipt(self):
+        client = YandexDirectClient("token", client_login="client")
+        params = {"Campaigns": [{"Id": 123}]}
+        approve = preview_id(client.approval_envelope("campaigns", "update", params))
+        api_payload = {"result": {"UpdateResults": [{"Id": 123}]}}
+        with patch("scripts.yd_api._http.request_json", return_value=(api_payload, {})):
+            receipt = client.request("campaigns", "update", params, approve=approve)
+        self.assertEqual(receipt.get("schema"), "yandex-ai-execution/v1")
+        self.assertEqual(receipt.get("preview_id"), approve)
+        self.assertEqual(receipt.get("execution"), {"state": "EXECUTED"})
+        self.assertEqual(
+            receipt.get("verification"),
+            {"capability": "RESPONSE_ONLY", "state": "UNVERIFIED"},
+        )
+        self.assertEqual(receipt.get("rollback", {}).get("capability"), "NOT_AVAILABLE")
 
     def test_client_login_change_invalidates_approval(self):
         params = {"Campaigns": [{"Id": 123}]}
@@ -119,11 +191,21 @@ class TestYandexDirectClient(unittest.TestCase):
     def _run_cli_and_capture_dry_run(self, method: str) -> bool:
         captured = {}
 
-        def fake_request(self, service, request_method, params, *, dry_run=False, approve=None):
+        def fake_request(
+            self,
+            service,
+            request_method,
+            params,
+            *,
+            dry_run=False,
+            approve=None,
+            ack_bulk=False,
+        ):
             captured["service"] = service
             captured["method"] = request_method
             captured["dry_run"] = dry_run
             captured["approve"] = approve
+            captured["ack_bulk"] = ack_bulk
             return {"dry_run": dry_run}
 
         with patch.dict(os.environ, {"YANDEX_DIRECT_TOKEN": "token"}, clear=False):
@@ -146,9 +228,19 @@ class TestYandexDirectClient(unittest.TestCase):
     def test_cli_execute_passes_approval_to_client(self):
         captured = {}
 
-        def fake_request(self, service, request_method, params, *, dry_run=False, approve=None):
+        def fake_request(
+            self,
+            service,
+            request_method,
+            params,
+            *,
+            dry_run=False,
+            approve=None,
+            ack_bulk=False,
+        ):
             captured["dry_run"] = dry_run
             captured["approve"] = approve
+            captured["ack_bulk"] = ack_bulk
             return {"ok": True}
 
         with patch.dict(os.environ, {"YANDEX_DIRECT_TOKEN": "token"}, clear=False):
@@ -166,6 +258,42 @@ class TestYandexDirectClient(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertFalse(captured["dry_run"])
         self.assertEqual(captured["approve"], "a" * 64)
+        self.assertFalse(captured["ack_bulk"])
+
+    def test_cli_ack_bulk_is_forwarded(self):
+        captured = {}
+
+        def fake_request(
+            self,
+            service,
+            request_method,
+            params,
+            *,
+            dry_run=False,
+            approve=None,
+            ack_bulk=False,
+        ):
+            captured["ack_bulk"] = ack_bulk
+            return {"ok": True}
+
+        with patch.dict(os.environ, {"YANDEX_DIRECT_TOKEN": "token"}, clear=False):
+            with patch.object(yd_api.YandexDirectClient, "request", new=fake_request):
+                with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                    try:
+                        rc = yd_api.main([
+                            "campaigns",
+                            "update",
+                            "--params",
+                            "{}",
+                            "--execute",
+                            "--approve",
+                            "a" * 64,
+                            "--ack-bulk",
+                        ])
+                    except SystemExit as exc:
+                        self.fail(f"--ack-bulk must be accepted by the CLI: {exc}")
+        self.assertEqual(rc, 0)
+        self.assertTrue(captured["ack_bulk"])
 
 
 if __name__ == "__main__":

@@ -32,3 +32,9 @@
 ## Координация исправления
 
 Security fix должен сохранять repository release governance: regression evidence, CI и independent review остаются отдельными сигналами, а human maintainer принимает решение о merge/release. Опубликованные immutable tags/releases не переписываются ради исправления; fix выпускается новым release set.
+
+## Исполняемый write-safety boundary
+
+Owning write-capable helpers используют approval schema `yandex-ai-approval/v2`, привязывающую exact operation, target, authenticated principal, cardinality и safety capability. Bulk или `UNKNOWN` scale блокируется до transport без отдельного `--ack-bulk`; threshold `20` — repository safety policy, а не Yandex API limit. Успешная mutation возвращает `yandex-ai-execution/v1`.
+
+P0 не заявляет больше, чем технически проверено: verification capability — `RESPONSE_ONLY`, verification state — `UNVERIFIED`, rollback capability — `NOT_AVAILABLE`. Получение ответа API не является read-back verification. Также standalone CLI не может доказать, что человек увидел preview и лично дал approval в последующем разговорном ходе; later-turn approval остаётся host/operator policy.

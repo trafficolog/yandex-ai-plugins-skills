@@ -75,7 +75,9 @@ Expected `yd_api.py` CLI failures (`validation`, `input`, `network`, `http`, `ap
 
 ## Safety enforcement boundary
 
-Helper-level executable guarantees are exact-preview approval binding, environment/auth-principal binding, env-only OAuth, the service allowlist, and bounded transport errors. Rollback-context preservation and tighter handling for bulk edits above 20 entities remain agent/operator policy; generic helper-level enforcement is not claimed until a separate safety design defines those semantics.
+A consequential preview uses `yandex-ai-approval/v2`: exact service/method/environment/body, `Client-Login`, authenticated-principal binding, cardinality, and safety capability are bound in one digest. For known entity-list writes the helper counts exact items; opaque write shapes receive `UNKNOWN` scale. Repository threshold `20` is internal safety policy, not a Yandex API limit. Bulk `>20` and `UNKNOWN` execution are blocked before transport without `--ack-bulk`, even with a correct `--approve <preview_id>`.
+
+A successful write returns a `yandex-ai-execution/v1` receipt with the same `preview_id`. The current capability declaration remains truthfully `RESPONSE_ONLY` + `UNVERIFIED`; rollback is `NOT_AVAILABLE`. This is not read-back verification or automatic rollback. A standalone CLI also cannot prove later-turn human approval: the host/operator must show the exact preview and obtain a separate later user approval.
 
 ## Helpers
 
@@ -84,6 +86,7 @@ export YANDEX_DIRECT_TOKEN='...'
 python scripts/yd_api.py campaigns get --params '{"SelectionCriteria":{},"FieldNames":["Id","Name","Status"]}'
 python scripts/yd_api.py campaigns update --params-file update.json # preview
 python scripts/yd_api.py campaigns update --params-file update.json --execute --approve <preview_id>
+python scripts/yd_api.py campaigns update --params-file bulk-update.json --execute --approve <preview_id> --ack-bulk
 python scripts/yd_api.py campaigns get --params '{}' --sandbox
 python scripts/yd_report.py campaign 2026-08-01 2026-08-31 --output report.tsv
 ```

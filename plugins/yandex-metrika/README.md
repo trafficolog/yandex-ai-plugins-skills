@@ -43,6 +43,14 @@ Management writes, Logs `create`/`clean` и imports fail-closed без exact app
 - consequential writes требуют later-turn exact `preview_id` approval;
 - cross-service consumers должны сохранять quality limitations.
 
+## Safety enforcement boundary
+
+Consequential writes используют `yandex-ai-approval/v2` с authenticated-principal binding, exact request/target и cardinality. Generic Management write считается `UNKNOWN`, поэтому после exact `--approve <preview_id>` требует `--ack-bulk` до transport. Repository threshold `20` — внутренняя safety policy, а не Yandex API limit.
+
+Logs `create`/`clean` и каждый import — один API operation (`KNOWN`, `items=1`), поэтому row count CSV не превращает upload в bulk API operation. Для import отдельно approval-bound `artifact_rows`, SHA-256 точных file bytes и expense `risk_flags`; Direct/unverified expense provenance сохраняет собственный explicit risk override.
+
+Успешный consequential call возвращает `yandex-ai-execution/v1`; P0 verification — `RESPONSE_ONLY` + `UNVERIFIED`, rollback — `NOT_AVAILABLE`. Standalone CLI не доказывает later-turn human approval: это обязательная host/operator policy.
+
 ## Skills
 
 `yandex-metrika`, `-audit`, `-reporting`, `-conversions`, `-ecommerce`, `-attribution`, `-goals`, `-logs`, `-imports`, `-api`.

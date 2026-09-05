@@ -9,17 +9,19 @@ from typing import Any, Callable
 from urllib.parse import urlencode, urlsplit, urlunsplit
 
 try:
+    from . import _safety
     from ._approval import preview_id, require_approval
     from ._http import auth_headers, redact_headers, request_json
 except ImportError:
+    import _safety
     from _approval import preview_id, require_approval
     from _http import auth_headers, redact_headers, request_json
 
 API_ROOT = "https://api.webmaster.yandex.net"
 ALLOWED_VERSIONS = {"v4", "v4.1"}
 READ_METHODS = {"GET", "HEAD", "OPTIONS"}
-APPROVAL_SCHEMA = "yandex-ai-approval/v1"
 BASIC_AUTH_BINDING_DOMAIN = b"yandex-webmaster-basic-auth/v1\0"
+AUTH_PRINCIPAL_DOMAIN = b"yandex-webmaster-auth-principal/v2"
 
 
 def api_url(path: str, *, params: dict[str, Any] | None = None, version: str = "v4") -> str:
@@ -34,6 +36,35 @@ def api_url(path: str, *, params: dict[str, Any] | None = None, version: str = "
 
 def is_consequential(method: str) -> bool:
     return method.upper() not in READ_METHODS
+
+
+def webmaster_cardinality(path: str, body: Any | None) -> dict[str, object]:
+    normalized = path.strip("/")
+    if (
+        normalized.endswith("/feeds/batch/add")
+        and isinstance(body, dict)
+        and isinstance(body.get("feeds"), list)
+    ):
+        return _safety.known_cardinality(len(body["feeds"]))
+    if (
+        normalized.endswith("/feeds/batch/remove")
+        and isinstance(body, dict)
+        and isinstance(body.get("urls"), list)
+    ):
+        return _safety.known_cardinality(len(body["urls"]))
+    if normalized.endswith("/recrawl/queue"):
+        return _safety.known_cardinality(1)
+    if normalized.endswith("/user-added-sitemaps"):
+        return _safety.known_cardinality(1)
+    if "/user-added-sitemaps/" in normalized:
+        return _safety.known_cardinality(1)
+    if normalized.endswith("/recrawl"):
+        return _safety.known_cardinality(1)
+    if normalized.endswith("/feeds/add/start"):
+        return _safety.known_cardinality(1)
+    if normalized.endswith("/indexing/archive"):
+        return _safety.known_cardinality(1)
+    return _safety.unknown_cardinality()
 
 
 def redact_url_credentials(value: str) -> str:
@@ -106,56 +137,95 @@ def approval_envelope(
     *,
     method: str,
     path: str,
+    token: str,
     params: dict[str, Any] | None = None,
     body: Any | None = None,
     version: str = "v4",
-    token: str | None = None,
 ) -> dict[str, Any]:
+    normalized_method = method.upper()
+    normalized_path = path.strip("/")
     safe_params = _approval_value(params or {}, token=token)
     safe_body = _approval_value(body, token=token)
+    cardinality = webmaster_cardinality(normalized_path, body)
+    safety = {
+        "verification": "RESPONSE_ONLY",
+        "rollback": "NOT_AVAILABLE",
+        "risk_flags": [],
+    }
     return {
-        "schema": APPROVAL_SCHEMA,
+        "schema": _safety.APPROVAL_SCHEMA,
         "plugin": "yandex-webmaster",
-        "environment": "production",
-        "api_version": version,
-        "method": method.upper(),
-        "path": path.strip("/"),
-        "url": api_url(path, params=safe_params or None, version=version),
-        "query": safe_params,
-        "body": safe_body,
+        "operation": f"api.{normalized_method.lower()}.{normalized_path}",
+        "request": {
+            "method": normalized_method,
+            "environment": "production",
+            "api_version": version,
+            "url": api_url(path, params=safe_params or None, version=version),
+            "path": normalized_path,
+            "query": safe_params,
+            "body": safe_body,
+        },
+        "target": {
+            "path": normalized_path,
+            "auth_principal_binding": _safety.principal_binding(
+                token, domain=AUTH_PRINCIPAL_DOMAIN
+            ),
+        },
+        "artifacts": [],
+        "cardinality": cardinality,
+        "safety": safety,
     }
 
 
 def prepare_request(
-    *, method: str, path: str, token: str, params: dict[str, Any] | None = None,
-    body: Any | None = None, version: str = "v4"
+    *,
+    method: str,
+    path: str,
+    token: str,
+    params: dict[str, Any] | None = None,
+    body: Any | None = None,
+    version: str = "v4",
 ) -> dict[str, Any]:
+    envelope = approval_envelope(
+        method=method,
+        path=path,
+        token=token,
+        params=params,
+        body=body,
+        version=version,
+    )
+    safe_preview_params = _redact_preview_value(params or {})
     result = {
         "method": method.upper(),
-        "url": api_url(path, params=params, version=version),
+        "url": api_url(path, params=safe_preview_params or None, version=version),
         "headers": redact_headers(auth_headers(token)),
         "body": _redact_preview_value(body),
         "consequential": is_consequential(method),
         "version": version,
     }
     if result["consequential"]:
-        result["preview_id"] = preview_id(
-            approval_envelope(
-                method=method,
-                path=path,
-                params=params,
-                body=body,
-                version=version,
-                token=token,
-            )
+        result.update(
+            {
+                "approval_schema": envelope["schema"],
+                "preview_id": preview_id(envelope),
+                "cardinality": envelope["cardinality"],
+                "safety": envelope["safety"],
+            }
         )
     return result
 
 
 def run_request(
-    *, method: str, path: str, token: str, params: dict[str, Any] | None = None,
-    body: Any | None = None, version: str = "v4", execute: bool = False,
+    *,
+    method: str,
+    path: str,
+    token: str,
+    params: dict[str, Any] | None = None,
+    body: Any | None = None,
+    version: str = "v4",
+    execute: bool = False,
     approve: str | None = None,
+    ack_bulk: bool = False,
     transport: Callable[..., Any] | None = None,
 ) -> Any:
     preview = prepare_request(
@@ -169,30 +239,46 @@ def run_request(
     consequential = is_consequential(method)
     if consequential and not execute:
         return {"dry_run": True, **preview}
+
+    envelope = approval_envelope(
+        method=method,
+        path=path,
+        token=token,
+        params=params,
+        body=body,
+        version=version,
+    )
+    approved_preview: str | None = None
     if consequential:
-        require_approval(
-            approval_envelope(
-                method=method,
-                path=path,
-                params=params,
-                body=body,
-                version=version,
-                token=token,
-            ),
-            approve,
-        )
+        approved_preview = require_approval(envelope, approve)
+        _safety.require_bulk_ack(envelope["cardinality"], ack_bulk)
+
     url = api_url(path, params=params, version=version)
     if transport is not None:
-        return transport(method=method.upper(), url=url, token=token, body=body)
-    _, payload = request_json(method, url, token, body=body)
-    return payload
+        payload = transport(method=method.upper(), url=url, token=token, body=body)
+    else:
+        _, payload = request_json(method, url, token, body=body)
+
+    if not consequential:
+        return payload
+    return _safety.execution_receipt(
+        preview_id=approved_preview or "",
+        plugin="yandex-webmaster",
+        operation=envelope["operation"],
+        target=envelope["target"],
+        cardinality=envelope["cardinality"],
+        result=payload,
+        verification_capability="RESPONSE_ONLY",
+        verification_state="UNVERIFIED",
+        rollback_capability="NOT_AVAILABLE",
+    )
 
 
 def _json_arg(value: str | None) -> Any | None:
     return None if value is None else json.loads(value)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Yandex Webmaster API helper")
     parser.add_argument("path")
     parser.add_argument("--method", default="GET")
@@ -201,7 +287,12 @@ def main() -> int:
     parser.add_argument("--body", help="JSON request body")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--approve", help="Exact preview_id for the consequential operation")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--ack-bulk",
+        action="store_true",
+        help="Acknowledge bulk or unknown operation scale after reviewing the exact preview",
+    )
+    args = parser.parse_args(argv)
     token = os.environ.get("YANDEX_WEBMASTER_TOKEN", "")
     payload = run_request(
         method=args.method,
@@ -212,6 +303,7 @@ def main() -> int:
         version=args.version,
         execute=args.execute,
         approve=args.approve,
+        ack_bulk=args.ack_bulk,
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0

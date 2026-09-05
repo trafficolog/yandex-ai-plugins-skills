@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
-import hmac
 import json
 import os
 import sys
@@ -12,10 +10,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
 try:
-    from . import _http
+    from . import _http, _safety
     from ._approval import preview_id, require_approval
 except ImportError:  # CLI execution from scripts directory
     import _http
+    import _safety
     from _approval import preview_id, require_approval
 
 PRODUCTION_API_BASE = "https://api.direct.yandex.com/json/v501"
@@ -60,7 +59,16 @@ READ_METHODS = {
     "getchanges",
 }
 LEGACY_TOKEN_OPTIONS = {"--t", "--to", "--tok", "--toke", "--token"}
-AUTH_PRINCIPAL_DOMAIN = b"yandex-direct-auth-principal/v1"
+AUTH_PRINCIPAL_DOMAIN = b"yandex-direct-auth-principal/v2"
+ENTITY_LIST_KEYS = {
+    "campaigns": "Campaigns",
+    "adgroups": "AdGroups",
+    "ads": "Ads",
+    "keywords": "Keywords",
+    "bids": "Bids",
+    "feeds": "Feeds",
+    "creatives": "Creatives",
+}
 
 
 class YandexDirectError(RuntimeError):
@@ -74,11 +82,17 @@ def is_read_method(method: str) -> bool:
 
 
 def auth_principal_binding(token: str) -> str:
-    return hmac.new(
-        token.encode("utf-8"),
-        AUTH_PRINCIPAL_DOMAIN,
-        hashlib.sha256,
-    ).hexdigest()
+    return _safety.principal_binding(token, domain=AUTH_PRINCIPAL_DOMAIN)
+
+
+def mutation_cardinality(
+    service: str, params: Mapping[str, Any] | None
+) -> dict[str, object]:
+    key = ENTITY_LIST_KEYS.get(service)
+    value = (params or {}).get(key) if key else None
+    if isinstance(value, list):
+        return _safety.known_cardinality(len(value))
+    return _safety.unknown_cardinality()
 
 
 def emit_cli_error(error_type: str, message: str) -> int:
@@ -144,19 +158,32 @@ class YandexDirectClient:
     ) -> dict[str, Any]:
         normalized_service = validate_service(service)
         normalized_method = method.strip().lower()
+        cardinality = mutation_cardinality(normalized_service, params)
+        safety = {
+            "verification": "RESPONSE_ONLY",
+            "rollback": "NOT_AVAILABLE",
+            "risk_flags": [],
+        }
         return {
-            "schema": "yandex-ai-approval/v1",
+            "schema": _safety.APPROVAL_SCHEMA,
             "plugin": "yandex-direct",
             "operation": f"{normalized_service}.{normalized_method}",
-            "method": "POST",
-            "target": {
+            "request": {
+                "method": "POST",
                 "environment": self.environment,
-                "client_login": self.client_login,
-                "auth_principal_hmac_sha256": auth_principal_binding(self.token),
+                "api_version": "v501" if self.environment == "production" else "v5",
+                "url": self.endpoint(service),
+                "path": normalized_service,
+                "query": {},
+                "body": self.body(method, params),
             },
-            "url": self.endpoint(service),
-            "body": self.body(method, params),
+            "target": {
+                "client_login": self.client_login,
+                "auth_principal_binding": auth_principal_binding(self.token),
+            },
             "artifacts": [],
+            "cardinality": cardinality,
+            "safety": safety,
         }
 
     def request(
@@ -167,6 +194,7 @@ class YandexDirectClient:
         *,
         dry_run: bool = False,
         approve: str | None = None,
+        ack_bulk: bool = False,
     ) -> dict[str, Any]:
         body = self.body(method, params)
         envelope = self.approval_envelope(service, method, params)
@@ -175,15 +203,21 @@ class YandexDirectClient:
             safe_headers["Authorization"] = "Bearer ***REDACTED***"
             return {
                 "dry_run": True,
+                "approval_schema": envelope["schema"],
                 "preview_id": preview_id(envelope),
                 "environment": self.environment,
                 "endpoint": self.endpoint(service),
                 "headers": safe_headers,
                 "body": body,
+                "cardinality": envelope["cardinality"],
+                "safety": envelope["safety"],
             }
 
-        if not is_read_method(method):
-            require_approval(envelope, approve)
+        approved_preview: str | None = None
+        consequential = not is_read_method(method)
+        if consequential:
+            approved_preview = require_approval(envelope, approve)
+            _safety.require_bulk_ack(envelope["cardinality"], ack_bulk)
 
         try:
             data, transport = _http.request_json(
@@ -201,6 +235,22 @@ class YandexDirectClient:
             request_id = transport.get("request_id") or data.get("request_id") or data.get("RequestId")
             suffix = f" request_id={request_id}" if request_id else ""
             raise YandexDirectError(f"Yandex Direct API error: {err}{suffix}", error_type="api")
+
+        if consequential:
+            receipt = _safety.execution_receipt(
+                preview_id=approved_preview or "",
+                plugin="yandex-direct",
+                operation=envelope["operation"],
+                target=envelope["target"],
+                cardinality=envelope["cardinality"],
+                result=data,
+                verification_capability="RESPONSE_ONLY",
+                verification_state="UNVERIFIED",
+                rollback_capability="NOT_AVAILABLE",
+            )
+            receipt["transport"] = transport
+            return receipt
+
         return {"result": data, "transport": transport}
 
 
@@ -232,6 +282,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sandbox", action="store_true", help="Use the official Yandex Direct sandbox endpoint")
     parser.add_argument("--execute", action="store_true", help="Execute consequential operation")
     parser.add_argument("--approve", help="Full preview_id for the exact consequential preview")
+    parser.add_argument(
+        "--ack-bulk",
+        action="store_true",
+        help="Acknowledge bulk or unknown operation scale after reviewing the exact preview",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Preview any operation")
     args = parser.parse_args(raw_argv)
 
@@ -253,12 +308,17 @@ def main(argv: list[str] | None = None) -> int:
             client_login=args.client_login,
             environment=environment,
         )
+        request_kwargs: dict[str, Any] = {
+            "dry_run": dry_run,
+            "approve": args.approve,
+        }
+        if is_write:
+            request_kwargs["ack_bulk"] = args.ack_bulk
         result = client.request(
             args.service,
             args.method,
             params,
-            dry_run=dry_run,
-            approve=args.approve,
+            **request_kwargs,
         )
     except json.JSONDecodeError as exc:
         return emit_cli_error("input", str(exc))

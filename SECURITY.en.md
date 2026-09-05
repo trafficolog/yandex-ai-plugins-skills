@@ -32,3 +32,9 @@ When safe, include the affected release/commit/plugin, minimal reproduction step
 ## Fix coordination
 
 A security fix preserves repository release governance: regression evidence, CI, and independent review remain separate signals, while the human maintainer owns merge/release authorization. Published immutable tags/releases are not rewritten for a fix; remediation ships as a new release set.
+
+## Executable write-safety boundary
+
+Owning write-capable helpers use approval schema `yandex-ai-approval/v2`, binding the exact operation, target, authenticated principal, cardinality, and safety capability. Bulk or `UNKNOWN` scale is blocked before transport without separate `--ack-bulk`; threshold `20` is repository safety policy, not a Yandex API limit. A successful mutation returns `yandex-ai-execution/v1`.
+
+P0 claims no stronger guarantee than the implementation proves: verification capability is `RESPONSE_ONLY`, verification state is `UNVERIFIED`, and rollback capability is `NOT_AVAILABLE`. Receiving an API response is not read-back verification. A standalone CLI also cannot prove that a human saw the preview and personally supplied approval in a later conversational turn; later-turn approval remains host/operator policy.

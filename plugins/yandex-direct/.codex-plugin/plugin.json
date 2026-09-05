@@ -1,7 +1,7 @@
 {
   "name": "yandex-direct-suite",
   "description": "Skills for creating, auditing, reporting on, and safely optimizing Yandex Direct campaigns using current API v501 concepts.",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": {"name": "Community-derived, maintained for 2026 API behavior"},
   "license": "MIT",
   "keywords": ["yandex", "direct", "ppc", "реклама", "директ", "epc", "епк", "wordstat", "metrika"],

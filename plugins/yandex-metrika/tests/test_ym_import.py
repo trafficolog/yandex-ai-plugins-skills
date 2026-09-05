@@ -102,6 +102,7 @@ class TestMetrikaImport(unittest.TestCase):
                 allow_direct_risk=True,
             )
             self.assertIn("DIRECT_DUPLICATION_RISK", preview["warnings"])
+            self.assertIn("DIRECT_DUPLICATION_RISK", preview["safety"]["risk_flags"])
 
     def test_direct_traffic_source_detail_without_utm_requires_explicit_override(self):
         content = "Date,TrafficSource,TrafficSourceDetail,Expenses\n2026-08-01,ad,yandex_direct_star,100\n"
@@ -164,6 +165,7 @@ class TestMetrikaImport(unittest.TestCase):
                 "offline-conversions",
                 123,
                 path,
+                token="secret",
                 comment="batch",
             )
             self.assertEqual(preview["preview_id"], preview_id(envelope))
@@ -174,8 +176,8 @@ class TestMetrikaImport(unittest.TestCase):
             right = self._csv(right_tmp, "A,B\n2,y\n")
             self.assertEqual(left.name, right.name)
             self.assertEqual(left.stat().st_size, right.stat().st_size)
-            left_id = preview_id(import_approval_envelope("offline-conversions", 123, left))
-            right_id = preview_id(import_approval_envelope("offline-conversions", 123, right))
+            left_id = preview_id(import_approval_envelope("offline-conversions", 123, left, token="secret"))
+            right_id = preview_id(import_approval_envelope("offline-conversions", 123, right, token="secret"))
             self.assertNotEqual(left_id, right_id)
 
     def test_execute_without_approval_is_blocked_before_upload(self):
@@ -204,7 +206,7 @@ class TestMetrikaImport(unittest.TestCase):
     def test_file_mutation_after_preview_invalidates_approval_before_upload(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = self._csv(tmp, "A,B\n1,x\n")
-            approve = preview_id(import_approval_envelope("offline-conversions", 123, path))
+            approve = preview_id(import_approval_envelope("offline-conversions", 123, path, token="secret"))
             path.write_text("A,B\n2,y\n", encoding="utf-8")
             opener = Mock(return_value=_JSONResponse())
             with self.assertRaises(ValueError):
@@ -221,7 +223,7 @@ class TestMetrikaImport(unittest.TestCase):
     def test_exact_approval_uploads_once(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = self._csv(tmp)
-            approve = preview_id(import_approval_envelope("offline-conversions", 123, path))
+            approve = preview_id(import_approval_envelope("offline-conversions", 123, path, token="secret"))
             opener = Mock(return_value=_JSONResponse())
             result = execute_import(
                 "offline-conversions",
@@ -232,7 +234,8 @@ class TestMetrikaImport(unittest.TestCase):
                 opener=opener,
             )
             opener.assert_called_once()
-            self.assertEqual(result, {"uploading": {"id": 1}})
+            self.assertEqual(result["result"], {"uploading": {"id": 1}})
+            self.assertEqual(result["schema"], "yandex-ai-execution/v1")
 
     def test_run_import_preview_then_exact_execute(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -250,7 +253,8 @@ class TestMetrikaImport(unittest.TestCase):
                 opener=opener,
             )
             opener.assert_called_once()
-            self.assertEqual(result, {"uploading": {"id": 1}})
+            self.assertEqual(result["result"], {"uploading": {"id": 1}})
+            self.assertEqual(result["preview_id"], preview["preview_id"])
 
     def test_multipart_builder_contains_file(self):
         with tempfile.TemporaryDirectory() as tmp:
