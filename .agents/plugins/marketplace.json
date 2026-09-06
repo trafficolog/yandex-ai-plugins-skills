@@ -9,7 +9,7 @@
     {"name":"yandex-webmaster","version":"2.1.0","source":{"source":"local","path":"./plugins/yandex-webmaster"},"policy":{"installation":"AVAILABLE","authentication":"ON_INSTALL"},"category":"SEO"},
     {"name":"yandex-wordstat","version":"1.1.2","source":{"source":"local","path":"./plugins/yandex-wordstat"},"policy":{"installation":"AVAILABLE","authentication":"ON_INSTALL"},"category":"SEO"},
     {"name":"yandex-search","version":"1.0.2","source":{"source":"local","path":"./plugins/yandex-search"},"policy":{"installation":"AVAILABLE","authentication":"ON_INSTALL"},"category":"SEO"},
-    {"name":"yandex-seo","version":"1.1.2","source":{"source":"local","path":"./plugins/yandex-seo"},"policy":{"installation":"AVAILABLE","authentication":"ON_USE"},"category":"SEO"},
+    {"name":"yandex-seo","version":"1.2.0","source":{"source":"local","path":"./plugins/yandex-seo"},"policy":{"installation":"AVAILABLE","authentication":"ON_USE"},"category":"SEO"},
     {"name":"yandex-marketing","version":"1.1.0","source":{"source":"local","path":"./plugins/yandex-marketing"},"policy":{"installation":"AVAILABLE","authentication":"ON_USE"},"category":"Marketing"}
   ]
 }
