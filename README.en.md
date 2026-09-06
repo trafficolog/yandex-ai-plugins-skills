@@ -10,7 +10,7 @@ A marketplace of independent AI plugins **for Yandex services**: Direct, Metrika
 
 The plugins give AI agents specialized skills, access to the relevant service data, and shared rules for safe operation. This is not a plugin set for YandexGPT: each plugin owns a specific domain and operates inside explicit access boundaries.
 
-The current published repository version is `1.4.0`. Plugin versions evolve independently. Historical published releases and tags remain immutable and are not retargeted to newer commits.
+The current published repository version is `1.4.0`. Plugin versions evolve independently. Published release tags are never retargeted to newer commits. Releases created after immutable-release enforcement remain `immutable`; earlier releases remain in their original historical state.
 
 ## What this is and who it is for
 
