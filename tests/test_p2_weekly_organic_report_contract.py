@@ -38,7 +38,7 @@ class P2WeeklyOrganicReportContractTests(unittest.TestCase):
             ("README.md", "README.en.md"),
             ("docs/ARCHITECTURE.md", "docs/ARCHITECTURE.en.md"),
             ("docs/GETTING_STARTED.md", "docs/GETTING_STARTED.en.md"),
-            ("docs/SECURITY.md", "docs/SECURITY.en.md"),
+            ("SECURITY.md", "SECURITY.en.md"),
             ("plugins/yandex-seo/README.md", "plugins/yandex-seo/README.en.md"),
         )
         for left, right in pairs:

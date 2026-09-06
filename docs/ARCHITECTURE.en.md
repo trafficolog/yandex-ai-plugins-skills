@@ -142,3 +142,16 @@ Project Memory is repository-level domain memory, not AI-runtime memory. The man
 `project.yaml` stores project identity and user-stated facts with `USER_STATED` provenance; replacing an active fact is explicit supersession. `record-execution` projects `yandex-ai-execution/v1` into a chained decision trail: raw `result` is not stored, while `receipt_sha256` hashes the complete receipt. `add-baseline` creates immutable snapshots; after `fresh_until` a snapshot is `STALE`, which is a warning rather than a mutation trigger. In `hypotheses.md`, only explicitly marked JSON fences are managed, with provenance restricted to `HYPOTHESIS` or `DERIVED`; all other Markdown and prompt-like text remains inert data.
 
 P1 does not expand write authority. Every new consequential mutation still crosses the P0 boundary: a new exact `preview_id`, later-turn explicit human approval, and separate `--ack-bulk` for bulk/unknown cardinality. Decision history, a `STALE` baseline, or a user fact is never reusable approval.
+
+## 12. P2 Weekly Organic Report
+
+`yandex-seo` owns the read-only `yandex-seo-weekly-report` workflow. It consumes already normalized Webmaster/Metrika evidence, imports none of their HTTP clients, and reads no service credentials. The normative machine artifact is `seo-weekly-organic-report/v1`; the portable package is described by `yandex-ai-artifact-manifest/v1`.
+
+```bash
+cd plugins/yandex-seo
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+`report.json` is the source of truth. `report.html` is a self-contained deterministic renderer with restrictive CSP, local sorting/filtering, and no external network dependencies. Mermaid/DOT exports are emitted only for structural/semantic/link structures that actually exist. Every delegated recommendation is marked `PREVIEW-ONLY` and does not expand P0 write authority.
+
+Artifact directories are immutable: exact replay is allowed only when managed files and hashes match; any difference under the same semantic `report_id` fails closed as a collision instead of overwriting. Optional P1 context is limited to project identity and active `USER_STATED` facts; hypotheses/decisions/stale baselines never become observed facts or suppress fresh-source limitations.

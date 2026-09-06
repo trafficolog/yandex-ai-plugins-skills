@@ -142,3 +142,16 @@ Project Memory — repository-level domain memory, а не память AI runti
 `project.yaml` хранит project identity и user-stated facts с provenance `USER_STATED`; замена active fact выполняется явным supersession. `record-execution` проецирует `yandex-ai-execution/v1` в chained decision trail: raw `result` не сохраняется, но `receipt_sha256` считается по полному receipt. `add-baseline` создаёт immutable snapshots; после `fresh_until` snapshot становится `STALE`, что является warning, а не mutation trigger. В `hypotheses.md` управляются только явно маркированные JSON fences, где provenance ограничен `HYPOTHESIS` или `DERIVED`; остальной Markdown и prompt-like текст остаются инертными данными.
 
 P1 не расширяет write authority. Любая новая consequential mutation по-прежнему проходит P0 boundary: новый exact `preview_id`, later-turn explicit human approval и отдельный `--ack-bulk` для bulk/unknown cardinality. Ни decision history, ни `STALE` baseline, ни user fact не являются reusable approval.
+
+## 12. P2 Weekly Organic Report
+
+`yandex-seo` владеет read-only workflow `yandex-seo-weekly-report`. Он принимает уже нормализованные Webmaster/Metrika evidence, не импортирует их HTTP clients и не читает service credentials. Нормативный machine artifact — `seo-weekly-organic-report/v1`; portable package описывается `yandex-ai-artifact-manifest/v1`.
+
+```bash
+cd plugins/yandex-seo
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+`report.json` является source of truth. `report.html` — self-contained deterministic renderer с restrictive CSP, локальной сортировкой/фильтрацией и без external network dependencies. Mermaid/DOT exports создаются только для реально присутствующих structural/semantic/link structures. Все delegated recommendations маркируются `PREVIEW-ONLY` и не расширяют P0 write authority.
+
+Artifact directories immutable: exact replay допустим только если managed files и hashes совпадают; любое различие при том же semantic `report_id` приводит к fail-closed collision вместо overwrite. Optional P1 context ограничен project identity и active `USER_STATED` facts; hypotheses/decisions/stale baselines не становятся observed facts и не подавляют fresh-source limitations.

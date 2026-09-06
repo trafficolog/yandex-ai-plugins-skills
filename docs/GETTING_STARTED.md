@@ -127,3 +127,16 @@ python scripts/ya_project.py check --root .
 Scaffold использует `yandex-ai-project/v1`; факты, которые пользователь явно сообщил, маркируются `USER_STATED`. Decision trail использует `yandex-ai-decision/v1`: после write receipt можно явно вызвать `record-execution`; безопасная projection не сохраняет raw `result`, но hash полного receipt связывает запись с источником. Immutable snapshots создаются через `add-baseline` по `yandex-ai-baseline/v1`; просроченный snapshot получает `STALE` warning. Managed hypotheses используют `yandex-ai-hypothesis/v1` и provenance только `HYPOTHESIS` или `DERIVED`.
 
 Project Memory — данные, а не инструкции и не write authority. Даже если память содержит прошлое решение или execution receipt, новый consequential write всё равно требует новый exact `preview_id`, later-turn human approval и, для bulk/unknown scale, `--ack-bulk`.
+
+## 10. Weekly Organic Report
+
+Самый короткий P2 path — bundled offline demo внутри `yandex-seo`:
+
+```bash
+cd plugins/yandex-seo
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+Demo и real build используют один contract `seo-weekly-organic-report/v1` и один `yandex-ai-artifact-manifest/v1`. Результат содержит normative `report.json`, self-contained `report.html`, manifest с SHA-256 и optional Mermaid/DOT exports. `PREVIEW-ONLY` recommendations остаются read-only/delegated и не разрешают запись.
+
+Для real build заранее получите свежие normalized Webmaster/Metrika evidence через owning service plugins или supported file/export path, затем передайте файлы в `seo_weekly_report.py build`. `yandex-seo` не читает Yandex credentials и не открывает transport. Partial/missing coverage сохраняется как explicit limitation; existing immutable artifact set не перезаписывается.

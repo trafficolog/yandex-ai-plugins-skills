@@ -211,3 +211,14 @@ plugins/yandex-<service>/
 ## License and sources
 
 Project code and original documentation are MIT licensed. Official Yandex documentation remains canonical for API behavior; external methodology/workflow material is used as a source of ideas rather than a substitute for authoritative API/ranking evidence.
+
+## Weekly Organic Report
+
+P2 adds the transport-free read-only `yandex-seo-weekly-report` workflow. The normative machine artifact is `seo-weekly-organic-report/v1`, and the portable immutable package uses `yandex-ai-artifact-manifest/v1`.
+
+```bash
+cd plugins/yandex-seo
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+The demo requires no credentials or network access. `report.html` is self-contained; `report.json` remains the source of truth; delegated actions are marked `PREVIEW-ONLY`. The manifest records SHA-256 for managed files and an existing artifact snapshot is never overwritten on collision.

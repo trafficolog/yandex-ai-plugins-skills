@@ -70,3 +70,15 @@ Wordstat demand, Webmaster visibility, Search point-in-time context and Metrika 
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Weekly Organic Report
+
+`yandex-seo-weekly-report` builds the read-only `seo-weekly-organic-report/v1` from normalized Webmaster/Metrika evidence and packages it as an immutable artifact set under `yandex-ai-artifact-manifest/v1`. `report.json` is normative; `report.html` is a self-contained view with no CDN, remote fonts, analytics, or network fetch. Delegated recommendations are always marked `PREVIEW-ONLY` and are never write approval.
+
+The quick offline demo requires no Yandex credentials or network access:
+
+```bash
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+Artifacts include `report.json`, `report.html`, `manifest.json`, plus only those Mermaid/DOT diagrams backed by source structures that actually exist. An existing artifact directory is never overwritten: exact deterministic replay succeeds only when every managed byte/hash matches; otherwise the workflow fails closed.

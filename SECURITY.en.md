@@ -48,3 +48,14 @@ Project Memory is project-owned data under `.yandex-ai/` and uses four explicit 
 **Project memory is not write permission.** A fact, baseline, hypothesis, or decision record never replaces an exact `preview_id`, later-turn human approval, or the separate `--ack-bulk` gate for bulk/unknown scale. P1 does not weaken the P0 write gate and execution history is never reusable approval.
 
 Secret-like key detection is a fail-closed safeguard for managed memory, but it is **not a complete DLP**. Credentials, tokens, and other sensitive authentication material must not be stored under `.yandex-ai/` even when a particular secret shape is not detected by the heuristic.
+
+## P2 Weekly Organic Report
+
+`seo-weekly-organic-report/v1` and `yandex-ai-artifact-manifest/v1` are read-only reporting contracts. P2 gives `yandex-seo` no service credentials or transport; the demo runs locally without network access:
+
+```bash
+cd plugins/yandex-seo
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+`report.html` is self-contained and blocks external network access with restrictive CSP; source/user strings are escaped before HTML insertion. Artifact snapshots are immutable and SHA-256 verified; collisions never overwrite an existing snapshot. Delegated actions are marked `PREVIEW-ONLY` and carry no reusable write approval. P1 memory, report history, or an artifact manifest cannot satisfy the P0 approval gate.

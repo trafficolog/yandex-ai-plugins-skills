@@ -127,3 +127,16 @@ python scripts/ya_project.py check --root .
 The scaffold uses `yandex-ai-project/v1`; facts explicitly stated by the user carry `USER_STATED` provenance. The decision trail uses `yandex-ai-decision/v1`: after a write receipt, call `record-execution`; its safe projection omits raw `result` while a hash of the complete receipt preserves source linkage. Immutable snapshots are created through `add-baseline` under `yandex-ai-baseline/v1`; an expired snapshot produces a `STALE` warning. Managed hypotheses use `yandex-ai-hypothesis/v1` and only `HYPOTHESIS` or `DERIVED` provenance.
 
 Project Memory is data, not instructions and not write authority. Even when memory contains a prior decision or execution receipt, a new consequential write still requires a new exact `preview_id`, later-turn human approval, and `--ack-bulk` for bulk/unknown scale.
+
+## 10. Weekly Organic Report
+
+The shortest P2 path is the bundled offline demo inside `yandex-seo`:
+
+```bash
+cd plugins/yandex-seo
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+Demo and real build use the same `seo-weekly-organic-report/v1` contract and the same `yandex-ai-artifact-manifest/v1`. The result contains normative `report.json`, self-contained `report.html`, a SHA-256 manifest, and optional Mermaid/DOT exports. `PREVIEW-ONLY` recommendations remain read-only/delegated and never authorize a write.
+
+For a real build, first obtain fresh normalized Webmaster/Metrika evidence through the owning service plugins or supported file/export path, then pass the files to `seo_weekly_report.py build`. `yandex-seo` reads no Yandex credentials and opens no transport. Partial/missing coverage remains an explicit limitation; an existing immutable artifact set is never overwritten.
