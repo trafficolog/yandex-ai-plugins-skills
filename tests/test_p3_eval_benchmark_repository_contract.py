@@ -69,7 +69,9 @@ class P3EvalBenchmarkRepositoryContractTests(unittest.TestCase):
         for relative in sorted(P3_PATHS):
             self.assertTrue((ROOT / relative).is_file(), relative)
 
-        allowed_internal = {"scripts", "eval_benchmark"}
+        # yd_api is an existing repository-owned Direct helper deliberately loaded
+        # by the bundled backend-equivalence harness. It is not a third-party dependency.
+        allowed_internal = {"scripts", "eval_benchmark", "yd_api"}
         python_paths = [
             "scripts/ya_eval.py",
             *sorted(
