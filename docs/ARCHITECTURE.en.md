@@ -134,3 +134,11 @@ Owning Direct, Metrika, and Webmaster helpers use `yandex-ai-approval/v2`: the e
 After transport, a successful write returns `yandex-ai-execution/v1`. In the current P0 contract verification capability is `RESPONSE_ONLY`, state is `UNVERIFIED`, and rollback is `NOT_AVAILABLE`. The architecture therefore distinguishes `EXECUTED` from `VERIFIED`: an API response does not prove the final state through read-back.
 
 Later-turn human approval remains orchestration/host policy. A standalone CLI checks the exact digest and scale gate, but cannot itself prove that a human saw the preview and supplied approval in a later conversational turn.
+
+## 11. P1 Project Memory
+
+Project Memory is repository-level domain memory, not AI-runtime memory. The managed user tree consists of `.yandex-ai/project.yaml`, `.yandex-ai/decisions.jsonl`, `.yandex-ai/baselines/`, and `.yandex-ai/hypotheses.md`. Its schemas are `yandex-ai-project/v1`, `yandex-ai-decision/v1`, `yandex-ai-baseline/v1`, and `yandex-ai-hypothesis/v1`.
+
+`project.yaml` stores project identity and user-stated facts with `USER_STATED` provenance; replacing an active fact is explicit supersession. `record-execution` projects `yandex-ai-execution/v1` into a chained decision trail: raw `result` is not stored, while `receipt_sha256` hashes the complete receipt. `add-baseline` creates immutable snapshots; after `fresh_until` a snapshot is `STALE`, which is a warning rather than a mutation trigger. In `hypotheses.md`, only explicitly marked JSON fences are managed, with provenance restricted to `HYPOTHESIS` or `DERIVED`; all other Markdown and prompt-like text remains inert data.
+
+P1 does not expand write authority. Every new consequential mutation still crosses the P0 boundary: a new exact `preview_id`, later-turn explicit human approval, and separate `--ack-bulk` for bulk/unknown cardinality. Decision history, a `STALE` baseline, or a user fact is never reusable approval.

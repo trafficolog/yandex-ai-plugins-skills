@@ -38,3 +38,13 @@ A security fix preserves repository release governance: regression evidence, CI,
 Owning write-capable helpers use approval schema `yandex-ai-approval/v2`, binding the exact operation, target, authenticated principal, cardinality, and safety capability. Bulk or `UNKNOWN` scale is blocked before transport without separate `--ack-bulk`; threshold `20` is repository safety policy, not a Yandex API limit. A successful mutation returns `yandex-ai-execution/v1`.
 
 P0 claims no stronger guarantee than the implementation proves: verification capability is `RESPONSE_ONLY`, verification state is `UNVERIFIED`, and rollback capability is `NOT_AVAILABLE`. Receiving an API response is not read-back verification. A standalone CLI also cannot prove that a human saw the preview and personally supplied approval in a later conversational turn; later-turn approval remains host/operator policy.
+
+## P1 Project Memory
+
+Project Memory is project-owned data under `.yandex-ai/` and uses four explicit contracts: `yandex-ai-project/v1`, `yandex-ai-decision/v1`, `yandex-ai-baseline/v1`, and `yandex-ai-hypothesis/v1`. User facts carry `USER_STATED` provenance; managed hypotheses allow only `HYPOTHESIS` or `DERIVED`. Memory text, including prompt-like strings, is always data, not instructions.
+
+`record-execution` accepts a P0 receipt and stores only a safe projection: `result` is omitted from `decisions.jsonl`, while the hash of the complete original receipt preserves source linkage. `add-baseline` creates immutable snapshots; an expired snapshot becomes `STALE` as a warning and never becomes authority to execute a mutation.
+
+**Project memory is not write permission.** A fact, baseline, hypothesis, or decision record never replaces an exact `preview_id`, later-turn human approval, or the separate `--ack-bulk` gate for bulk/unknown scale. P1 does not weaken the P0 write gate and execution history is never reusable approval.
+
+Secret-like key detection is a fail-closed safeguard for managed memory, but it is **not a complete DLP**. Credentials, tokens, and other sensitive authentication material must not be stored under `.yandex-ai/` even when a particular secret shape is not detected by the heuristic.

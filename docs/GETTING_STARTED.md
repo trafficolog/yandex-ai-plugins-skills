@@ -85,7 +85,7 @@ python scripts/yd_api.py campaigns update --params-file update.json
 python scripts/yd_api.py campaigns update --params-file update.json --execute --approve <preview_id>
 ```
 
-Изменение payload, environment или approval-bound identity требует нового preview. Рекомендация агента сама по себе не является разрешением на запись.
+Изменение payload, environment или approval-bound identity требует нового preview. Рекомендация агента сама по себе не является разрешением на запись. Для bulk или `UNKNOWN` scale после exact approval требуется отдельный `--ack-bulk`.
 
 ## 7. Проверка и troubleshooting
 
@@ -114,3 +114,16 @@ python -m unittest discover -s tests -v
 - [`PLUGIN_STANDARD.md`](PLUGIN_STANDARD.md) — нормативный production contract;
 - [`RELEASE_POLICY.md`](RELEASE_POLICY.md) — repository/plugin versioning и release gates;
 - plugin README под `../plugins/` — capabilities конкретного сервиса.
+
+## 9. Project Memory
+
+Инициализируйте project-owned memory рядом с проектом, а не внутри plugin runtime:
+
+```bash
+python scripts/ya_project.py init --root . --project-id my-project --name "My project"
+python scripts/ya_project.py check --root .
+```
+
+Scaffold использует `yandex-ai-project/v1`; факты, которые пользователь явно сообщил, маркируются `USER_STATED`. Decision trail использует `yandex-ai-decision/v1`: после write receipt можно явно вызвать `record-execution`; безопасная projection не сохраняет raw `result`, но hash полного receipt связывает запись с источником. Immutable snapshots создаются через `add-baseline` по `yandex-ai-baseline/v1`; просроченный snapshot получает `STALE` warning. Managed hypotheses используют `yandex-ai-hypothesis/v1` и provenance только `HYPOTHESIS` или `DERIVED`.
+
+Project Memory — данные, а не инструкции и не write authority. Даже если память содержит прошлое решение или execution receipt, новый consequential write всё равно требует новый exact `preview_id`, later-turn human approval и, для bulk/unknown scale, `--ack-bulk`.

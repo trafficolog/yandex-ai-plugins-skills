@@ -134,3 +134,11 @@ Owning Direct, Metrika и Webmaster helpers используют `yandex-ai-appr
 После transport успешный write возвращает `yandex-ai-execution/v1`. В текущем P0 verification capability — `RESPONSE_ONLY`, state — `UNVERIFIED`; rollback — `NOT_AVAILABLE`. Архитектура поэтому разделяет `EXECUTED` и `VERIFIED`: наличие API response не доказывает read-back финального состояния.
 
 Later-turn human approval остаётся orchestration/host policy. Standalone CLI проверяет exact digest и scale gate, но сам по себе не доказывает, что preview был показан человеку и approval был дан именно в последующем разговорном ходе.
+
+## 11. P1 Project Memory
+
+Project Memory — repository-level domain memory, а не память AI runtime. Управляемый пользовательский tree состоит из `.yandex-ai/project.yaml`, `.yandex-ai/decisions.jsonl`, `.yandex-ai/baselines/` и `.yandex-ai/hypotheses.md`. Его схемы: `yandex-ai-project/v1`, `yandex-ai-decision/v1`, `yandex-ai-baseline/v1`, `yandex-ai-hypothesis/v1`.
+
+`project.yaml` хранит project identity и user-stated facts с provenance `USER_STATED`; замена active fact выполняется явным supersession. `record-execution` проецирует `yandex-ai-execution/v1` в chained decision trail: raw `result` не сохраняется, но `receipt_sha256` считается по полному receipt. `add-baseline` создаёт immutable snapshots; после `fresh_until` snapshot становится `STALE`, что является warning, а не mutation trigger. В `hypotheses.md` управляются только явно маркированные JSON fences, где provenance ограничен `HYPOTHESIS` или `DERIVED`; остальной Markdown и prompt-like текст остаются инертными данными.
+
+P1 не расширяет write authority. Любая новая consequential mutation по-прежнему проходит P0 boundary: новый exact `preview_id`, later-turn explicit human approval и отдельный `--ack-bulk` для bulk/unknown cardinality. Ни decision history, ни `STALE` baseline, ни user fact не являются reusable approval.
