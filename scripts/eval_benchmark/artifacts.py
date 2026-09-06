@@ -19,6 +19,7 @@ RESULT_SCHEMA = "yandex-ai-benchmark-result/v1"
 MANIFEST_SCHEMA = "yandex-ai-benchmark-manifest/v1"
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+_STATES = {"PASS", "FAIL", "UNDETERMINED"}
 _HIDDEN_OR_PRIVATE_KEYS = {
     "chainofthought",
     "hiddenreasoning",
@@ -42,7 +43,9 @@ def _reject_private_fields(value: object, path: str = "$") -> None:
     if isinstance(value, dict):
         for key, child in value.items():
             if isinstance(key, str) and _normalized_key(key) in _HIDDEN_OR_PRIVATE_KEYS:
-                raise ValueError(f"hidden reasoning or private execution field is not allowed at {path}.{key}")
+                raise ValueError(
+                    f"hidden reasoning or private execution field is not allowed at {path}.{key}"
+                )
             _reject_private_fields(child, f"{path}.{key}")
     elif isinstance(value, list):
         for index, child in enumerate(value):
@@ -68,6 +71,144 @@ def _require_mapping(value: object, field: str) -> dict[str, Any]:
     return value
 
 
+def _require_nonempty_string(value: object, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty string")
+    return value
+
+
+def _identity_key(value: object, field: str) -> tuple[str, str, str, str]:
+    identity = _require_mapping(value, field)
+    runtime = _require_mapping(identity.get("runtime"), f"{field}.runtime")
+    model = _require_mapping(identity.get("model"), f"{field}.model")
+    return (
+        _require_nonempty_string(runtime.get("name"), f"{field}.runtime.name"),
+        _require_nonempty_string(runtime.get("version"), f"{field}.runtime.version"),
+        _require_nonempty_string(model.get("name"), f"{field}.model.name"),
+        _require_nonempty_string(model.get("version"), f"{field}.model.version"),
+    )
+
+
+def _identity_list(value: object) -> tuple[str, str, str, str] | None:
+    if not isinstance(value, list) or len(value) != 4 or any(
+        not isinstance(item, str) or not item for item in value
+    ):
+        return None
+    return value[0], value[1], value[2], value[3]
+
+
+def _is_fake_identity(value: dict[str, Any]) -> bool:
+    adapter_id = value.get("adapter_id")
+    return bool(value.get("fake")) or (
+        isinstance(adapter_id, str) and adapter_id.startswith("fake-")
+    )
+
+
+def _valid_count_summary(value: object, *, require_nonzero: bool) -> bool:
+    if not isinstance(value, dict):
+        return False
+    counts: dict[str, int] = {}
+    for key in ("passed", "failed", "undetermined", "total"):
+        item = value.get(key, 0 if key != "total" else None)
+        if not isinstance(item, int) or isinstance(item, bool) or item < 0:
+            return False
+        counts[key] = item
+    if counts["passed"] + counts["failed"] + counts["undetermined"] != counts["total"]:
+        return False
+    return counts["total"] > 0 if require_nonzero else True
+
+
+def _has_comparative_evidence(
+    *,
+    scenarios: list[object],
+    identities: list[object],
+    backend_equivalence: object,
+    memory_results: object,
+) -> bool:
+    if not isinstance(backend_equivalence, dict) or backend_equivalence.get("state") != "PASS":
+        return False
+    if not _valid_count_summary(memory_results, require_nonzero=True):
+        return False
+
+    subject_keys: set[tuple[str, str, str, str]] = set()
+    for index, raw_identity in enumerate(identities):
+        if not isinstance(raw_identity, dict) or _is_fake_identity(raw_identity):
+            return False
+        try:
+            subject_keys.add(_identity_key(raw_identity, f"subject_identities[{index}]"))
+        except ValueError:
+            return False
+    if len(subject_keys) < 2:
+        return False
+
+    has_memory_scenario = False
+    for index, raw_item in enumerate(scenarios):
+        if not isinstance(raw_item, dict):
+            return False
+        mechanical = raw_item.get("mechanical")
+        if not isinstance(mechanical, list) or not mechanical:
+            return False
+        if any(
+            not isinstance(item, dict) or item.get("state") not in _STATES
+            for item in mechanical
+        ):
+            return False
+
+        semantic = raw_item.get("semantic")
+        if not isinstance(semantic, dict) or semantic.get("judge_mode") != "INDEPENDENT":
+            return False
+        judge = semantic.get("judge")
+        if not isinstance(judge, dict) or _is_fake_identity(judge):
+            return False
+        try:
+            judge_key = _identity_key(judge, f"scenarios[{index}].semantic.judge")
+        except ValueError:
+            return False
+        if judge_key in subject_keys:
+            return False
+        if _identity_list(semantic.get("judge_identity")) != judge_key:
+            return False
+
+        subject = raw_item.get("subject")
+        if not isinstance(subject, dict):
+            return False
+        try:
+            subject_key = _identity_key(subject, f"scenarios[{index}].subject")
+        except ValueError:
+            return False
+        if subject_key not in subject_keys:
+            return False
+        if _identity_list(semantic.get("subject_identity")) != subject_key:
+            return False
+
+        route = semantic.get("route")
+        outcome = semantic.get("outcome")
+        if not isinstance(route, dict) or route.get("state") not in _STATES:
+            return False
+        if not isinstance(outcome, dict) or outcome.get("state") not in _STATES:
+            return False
+        must_convey = semantic.get("must_convey")
+        must_not_claim = semantic.get("must_not_claim")
+        if not isinstance(must_convey, list) or not isinstance(must_not_claim, list):
+            return False
+        if not must_convey and not must_not_claim:
+            return False
+        for group in (must_convey, must_not_claim):
+            if any(
+                not isinstance(item, dict) or item.get("state") not in _STATES
+                for item in group
+            ):
+                return False
+
+        if isinstance(raw_item.get("memory_fixture"), str):
+            memory_hash = raw_item.get("memory_context_sha256")
+            if not isinstance(memory_hash, str) or _HEX64.fullmatch(memory_hash) is None:
+                return False
+            has_memory_scenario = True
+
+    return has_memory_scenario
+
+
 def _validate_result_shape(result: object) -> dict[str, Any]:
     if not isinstance(result, dict):
         raise ValueError("benchmark result must be an object")
@@ -80,14 +221,21 @@ def _validate_result_shape(result: object) -> dict[str, Any]:
     if not isinstance(repository_sha, str) or _HEX40.fullmatch(repository_sha) is None:
         raise ValueError("repository_sha must be exactly 40 lowercase hex characters")
     _validate_timestamp(result.get("evaluated_at"))
-    if result.get("completeness") not in {"INFRASTRUCTURE_READY", "COMPARATIVE_COMPLETE"}:
+    completeness = result.get("completeness")
+    if completeness not in {"INFRASTRUCTURE_READY", "COMPARATIVE_COMPLETE"}:
         raise ValueError("benchmark completeness has unsupported value")
-    if not isinstance(result.get("comparative_complete"), bool):
+    comparative_complete = result.get("comparative_complete")
+    if not isinstance(comparative_complete, bool):
         raise ValueError("comparative_complete must be boolean")
+    if comparative_complete != (completeness == "COMPARATIVE_COMPLETE"):
+        raise ValueError("benchmark completeness fields must agree")
     scenarios = result.get("scenarios")
     if not isinstance(scenarios, list) or not scenarios:
         raise ValueError("benchmark result must contain scenarios")
     _require_mapping(result.get("aggregate"), "aggregate")
+    identities = result.get("subject_identities")
+    if not isinstance(identities, list):
+        raise ValueError("subject_identities must be a list")
     _reject_private_fields(result)
 
     body = {key: value for key, value in result.items() if key != "benchmark_id"}
@@ -117,19 +265,27 @@ def build_result_document(
     identities = run_result.get("subject_identities")
     if not isinstance(identities, list):
         raise ValueError("run_result.subject_identities must be a list")
-    completeness = run_result.get("completeness")
-    if completeness not in {"INFRASTRUCTURE_READY", "COMPARATIVE_COMPLETE"}:
+
+    claimed_completeness = run_result.get("completeness", "INFRASTRUCTURE_READY")
+    if claimed_completeness not in {"INFRASTRUCTURE_READY", "COMPARATIVE_COMPLETE"}:
         raise ValueError("run_result.completeness has unsupported value")
-    comparative_complete = run_result.get("comparative_complete")
-    if not isinstance(comparative_complete, bool):
+    claimed_comparative = run_result.get("comparative_complete", False)
+    if not isinstance(claimed_comparative, bool):
         raise ValueError("run_result.comparative_complete must be boolean")
+
+    effective_memory = memory_results
+    if effective_memory is None and run_result.get("memory_results") is not None:
+        raw_memory = run_result.get("memory_results")
+        if not isinstance(raw_memory, dict):
+            raise ValueError("run_result.memory_results must be an object")
+        effective_memory = raw_memory
 
     body: dict[str, object] = {
         "schema": RESULT_SCHEMA,
         "evaluated_at": evaluated_at,
         "repository_sha": repository_sha,
-        "completeness": completeness,
-        "comparative_complete": comparative_complete,
+        "completeness": "INFRASTRUCTURE_READY",
+        "comparative_complete": False,
         "aggregate": deepcopy(aggregate),
         "subject_identities": deepcopy(identities),
         "scenarios": deepcopy(scenarios),
@@ -138,10 +294,23 @@ def build_result_document(
         if not isinstance(backend_equivalence, dict):
             raise ValueError("backend_equivalence must be an object")
         body["backend_equivalence"] = deepcopy(backend_equivalence)
-    if memory_results is not None:
-        if not isinstance(memory_results, dict):
+    if effective_memory is not None:
+        if not isinstance(effective_memory, dict):
             raise ValueError("memory_results must be an object")
-        body["memory_results"] = deepcopy(memory_results)
+        body["memory_results"] = deepcopy(effective_memory)
+
+    body_scenarios = body["scenarios"]
+    body_identities = body["subject_identities"]
+    assert isinstance(body_scenarios, list) and isinstance(body_identities, list)
+    if _has_comparative_evidence(
+        scenarios=body_scenarios,
+        identities=body_identities,
+        backend_equivalence=body.get("backend_equivalence"),
+        memory_results=body.get("memory_results"),
+    ):
+        body["completeness"] = "COMPARATIVE_COMPLETE"
+        body["comparative_complete"] = True
+
     _reject_private_fields(body)
     benchmark_id = hashlib.sha256(canonical_json_bytes(body)).hexdigest()
     result = dict(body)
@@ -187,33 +356,46 @@ def render_comparison_html(result: dict[str, object]) -> str:
         if not isinstance(mechanical, list):
             raise ValueError("scenario.mechanical must be a list")
         scenario_rows.append(
-            "<tr><td>" + esc(plugin) + "</td><td><code>" + esc(scenario_id[:16]) +
-            "</code></td><td>" + esc(state) + "</td><td>" + esc(output.get("route", "")) + "</td></tr>"
+            "<tr><td>" + esc(plugin) + "</td><td><code>" + esc(scenario_id[:16])
+            + "</code></td><td>" + esc(state) + "</td><td>" + esc(output.get("route", ""))
+            + "</td></tr>"
         )
         detail_blocks.append(
-            "<section class=\"scenario\"><h3>" + esc(plugin) + " · " + esc(scenario_id[:16]) +
-            "</h3><p><strong>State:</strong> " + esc(state) +
-            "</p><h4>Final subject output</h4><pre>" + esc(text) +
-            "</pre><h4>Mechanical evidence</h4><pre>" + esc(json.dumps(mechanical, ensure_ascii=False, sort_keys=True)) +
-            "</pre><h4>Semantic evidence</h4><pre>" + esc(json.dumps(semantic, ensure_ascii=False, sort_keys=True)) +
-            "</pre></section>"
+            "<section class=\"scenario\"><h3>" + esc(plugin) + " · " + esc(scenario_id[:16])
+            + "</h3><p><strong>State:</strong> " + esc(state)
+            + "</p><h4>Final subject output</h4><pre>" + esc(text)
+            + "</pre><h4>Mechanical evidence</h4><pre>"
+            + esc(json.dumps(mechanical, ensure_ascii=False, sort_keys=True))
+            + "</pre><h4>Semantic evidence</h4><pre>"
+            + esc(json.dumps(semantic, ensure_ascii=False, sort_keys=True))
+            + "</pre></section>"
         )
 
-    csp = "default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; frame-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
-    document = """<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content=""" + esc(csp) + """>
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Yandex AI benchmark comparison</title>
-<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1rem;line-height:1.45}code,pre{font-family:ui-monospace,monospace}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f5f5;padding:1rem;border-radius:.5rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #bbb;padding:.5rem;text-align:left}.scenario{border-top:1px solid #ccc;margin-top:2rem;padding-top:1rem}.status{font-weight:700}</style>
-</head><body><main><h1>Executable eval benchmark</h1>
-<p><strong>Benchmark:</strong> <code>""" + esc(data["benchmark_id"]) + """</code></p>
-<p><strong>Repository:</strong> <code>""" + esc(data["repository_sha"]) + """</code></p>
-<p><strong>Evaluated:</strong> """ + esc(data["evaluated_at"]) + """</p>
-<p class="status"><strong>Completeness:</strong> """ + esc(data["completeness"]) + """</p>
-<h2>Aggregate</h2><p>PASS """ + str(passed) + """ · FAIL """ + str(failed) + """ · UNDETERMINED """ + str(undetermined) + """ · TOTAL """ + str(total) + """</p>
-<h2>Scenarios</h2><table><thead><tr><th>Plugin</th><th>Scenario</th><th>State</th><th>Route</th></tr></thead><tbody>""" + "".join(scenario_rows) + """</tbody></table>
-""" + "".join(detail_blocks) + """
-</main></body></html>"""
-    return document
+    csp = (
+        "default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; media-src 'none'; "
+        "frame-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; "
+        "base-uri 'none'; form-action 'none'"
+    )
+    return (
+        "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
+        "<meta http-equiv=\"Content-Security-Policy\" content=\"" + esc(csp) + "\">"
+        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        "<title>Yandex AI benchmark comparison</title>"
+        "<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1rem;line-height:1.45}"
+        "code,pre{font-family:ui-monospace,monospace}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f5f5;padding:1rem;border-radius:.5rem}"
+        "table{border-collapse:collapse;width:100%}th,td{border:1px solid #bbb;padding:.5rem;text-align:left}"
+        ".scenario{border-top:1px solid #ccc;margin-top:2rem;padding-top:1rem}.status{font-weight:700}</style>"
+        "</head><body><main><h1>Executable eval benchmark</h1>"
+        "<p><strong>Benchmark:</strong> <code>" + esc(data["benchmark_id"]) + "</code></p>"
+        "<p><strong>Repository:</strong> <code>" + esc(data["repository_sha"]) + "</code></p>"
+        "<p><strong>Evaluated:</strong> " + esc(data["evaluated_at"]) + "</p>"
+        "<p class=\"status\"><strong>Completeness:</strong> " + esc(data["completeness"]) + "</p>"
+        "<h2>Aggregate</h2><p>PASS " + str(passed) + " · FAIL " + str(failed)
+        + " · UNDETERMINED " + str(undetermined) + " · TOTAL " + str(total) + "</p>"
+        "<h2>Scenarios</h2><table><thead><tr><th>Plugin</th><th>Scenario</th><th>State</th><th>Route</th></tr></thead><tbody>"
+        + "".join(scenario_rows) + "</tbody></table>" + "".join(detail_blocks)
+        + "</main></body></html>"
+    )
 
 
 def _validate_relative_path(value: object) -> str:
@@ -252,7 +434,8 @@ def _managed_files(result: dict[str, object]) -> dict[str, bytes]:
     assert isinstance(scenarios, list)
     seen: set[str] = set()
     for item in scenarios:
-        assert isinstance(item, dict)
+        if not isinstance(item, dict):
+            raise ValueError("scenario result items must be objects")
         scenario_id = str(item.get("scenario_id", ""))
         if _HEX64.fullmatch(scenario_id) is None:
             raise ValueError("scenario_id must be lowercase SHA-256")
@@ -276,12 +459,14 @@ def _build_manifest(result: dict[str, object], files: dict[str, bytes]) -> dict[
         path = _validate_relative_path(raw_path)
         content = files[raw_path]
         role, media_type = _role_and_media_type(path)
-        items.append({
-            "path": path,
-            "role": role,
-            "media_type": media_type,
-            "sha256": hashlib.sha256(content).hexdigest(),
-        })
+        items.append(
+            {
+                "path": path,
+                "role": role,
+                "media_type": media_type,
+                "sha256": hashlib.sha256(content).hexdigest(),
+            }
+        )
     return {
         "schema": MANIFEST_SCHEMA,
         "artifact_set_id": data["benchmark_id"],
@@ -358,7 +543,9 @@ def publish_benchmark_artifacts(output_root: Path, result: dict[str, object]) ->
             pass
 
 
-def verify_benchmark_artifact_directory(source: Path) -> tuple[dict[str, object], dict[str, bytes]]:
+def verify_benchmark_artifact_directory(
+    source: Path,
+) -> tuple[dict[str, object], dict[str, bytes]]:
     source = Path(source)
     if not source.is_dir():
         raise ValueError("benchmark artifact source must be a directory")
