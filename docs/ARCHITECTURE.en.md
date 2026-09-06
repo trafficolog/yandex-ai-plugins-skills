@@ -126,3 +126,11 @@ Common invariants are checked by repository-level behavioral tests, including se
 - `../plugins/<service>/README.en.md` — capability boundary for a specific plugin;
 - `../plugins/<service>/references/` — volatile API facts;
 - `../plugins/<service>/skills/*/SKILL.md` — task-specific workflow contract.
+
+## 10. Executable consequential-write boundary
+
+Owning Direct, Metrika, and Webmaster helpers use `yandex-ai-approval/v2`: the exact operation, target, authenticated-principal binding, cardinality, and safety capabilities are part of one approval-bound envelope. `UNKNOWN` cardinality is treated as fail-closed bulk risk; repository threshold `20` is an internal safety policy, not a Yandex API limit. After exact approval, bulk/unknown execution requires the separate scale acknowledgement `--ack-bulk` on owning surfaces that can expose that cardinality.
+
+After transport, a successful write returns `yandex-ai-execution/v1`. In the current P0 contract verification capability is `RESPONSE_ONLY`, state is `UNVERIFIED`, and rollback is `NOT_AVAILABLE`. The architecture therefore distinguishes `EXECUTED` from `VERIFIED`: an API response does not prove the final state through read-back.
+
+Later-turn human approval remains orchestration/host policy. A standalone CLI checks the exact digest and scale gate, but cannot itself prove that a human saw the preview and supplied approval in a later conversational turn.

@@ -4,13 +4,13 @@
 
 Статус отражает то, что реально поставляется этим репозиторием, а не всю доступность продуктов Яндекса. Production plugins используют independent SemVer.
 
-> **FABLE release state:** breaking exact-preview generation Direct/Metrika/Webmaster `2.0.0` уже опубликована immutable releases. Review-5 maintenance increment обновляет Direct до `2.0.1`; Metrika `2.0.0` и Webmaster `2.0.0` остаются без изменений.
+> **Repository 1.1.0 release state:** Direct, Metrika и Webmaster переходят на `2.1.0` с mechanically enforced `yandex-ai-approval/v2`, authenticated-principal/cardinality binding, bulk/unknown pre-transport gate и `yandex-ai-execution/v1` receipts. Wordstat, Search, SEO и Marketing остаются на своих текущих версиях.
 
 | Service plugin | Tier | Status | Version | Primary scope | Execution sources to evaluate |
 |---|---:|---|---|---|---|
-| Yandex Direct | 1 | **available** | 2.0.1 | campaigns, audit, reports, optimization, keywords, budget; exact-preview write approval; hardened Reports transport | bundled API helper; future MCP/app adapter |
-| Yandex Metrika | 1 | **available** | 2.0.0 | reporting, conversions, ecommerce, attribution, goals, Logs API, imports; provenance-aware Direct expense duplication guard; exact-preview write approval | bundled API helpers; optional MCP/app backend |
-| Yandex Webmaster | 1 | **available** | 2.0.0 | indexing, diagnostics, queries, sitemaps, recrawl, links, feeds, exports; verified indexing archive `state` contract; exact-preview write approval | bundled API helpers; optional MCP/app backend |
+| Yandex Direct | 1 | **available** | 2.1.0 | campaigns, audit, reports, optimization, keywords, budget; approval v2; bulk/unknown `--ack-bulk`; execution receipts | bundled API helper; future MCP/app adapter |
+| Yandex Metrika | 1 | **available** | 2.1.0 | reporting, conversions, ecommerce, attribution, goals, Logs API, imports; approval v2; Management unknown-scale guard; single-operation Logs/import receipts | bundled API helpers; optional MCP/app backend |
+| Yandex Webmaster | 1 | **available** | 2.1.0 | indexing, diagnostics, queries, sitemaps, recrawl, links, feeds, exports; approval v2; descriptor/batch cardinality; execution receipts | bundled API helpers; optional MCP/app backend |
 | Yandex Wordstat | 1 | **available** | 1.1.2 | demand, frequency, semantics, dynamics, regions, trends; candidate topic maps; 20-association cap; unambiguous seed/topic relation provenance | bundled Wordstat API в составе Yandex Search API v2 helpers; optional MCP/app backend |
 | Yandex Search | 1 | **available** | 1.0.2 | web SERP, batch, rankings, competitors, URL-overlap clustering; 250-result depth | bundled Search API v2 helpers; optional MCP/app backend |
 | Yandex SEO | X | **available** | 1.1.2 | cross-service demand, visibility, performance, gaps, cannibalization, topical architecture, internal-link planning, prioritization; hardened structural/link artifact validation | pure-data orchestration over Wordstat + Search + Webmaster + Metrika |

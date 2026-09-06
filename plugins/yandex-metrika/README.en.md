@@ -2,7 +2,7 @@
 
 [Русский](README.md) · [**English**](README.en.md)
 
-Version `2.0.0`. Service plugin for Yandex Metrika reporting, conversions, ecommerce, attribution, goals, Logs API, imports and low-level Management API workflows.
+Version `2.1.0`. Service plugin for Yandex Metrika reporting, conversions, ecommerce, attribution, goals, Logs API, imports and low-level Management API workflows.
 
 ## Migration 1.x → 2.0.0
 
@@ -42,6 +42,14 @@ Management writes, Logs `create`/`clean`, and imports fail closed without exact 
 - an arbitrary substring such as `MyDirect` is not treated as proven Direct provenance by label alone;
 - consequential writes require later-turn approval of the exact `preview_id`;
 - cross-service consumers preserve quality limitations.
+
+## Safety enforcement boundary
+
+Consequential writes use `yandex-ai-approval/v2` with authenticated-principal binding, exact request/target, and cardinality. A generic Management write is `UNKNOWN`, so after exact `--approve <preview_id>` it also requires `--ack-bulk` before transport. Repository threshold `20` is internal safety policy, not a Yandex API limit.
+
+Logs `create`/`clean` and each import are one API operation (`KNOWN`, `items=1`), so CSV row count does not turn an upload into a bulk API operation. Imports separately bind `artifact_rows`, the SHA-256 of exact file bytes, and expense `risk_flags`; Direct/unverified expense provenance keeps its own explicit risk override.
+
+A successful consequential call returns `yandex-ai-execution/v1`; P0 verification is `RESPONSE_ONLY` + `UNVERIFIED`, and rollback is `NOT_AVAILABLE`. A standalone CLI does not prove later-turn human approval; that remains mandatory host/operator policy.
 
 ## Skills
 

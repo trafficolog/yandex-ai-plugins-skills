@@ -99,17 +99,22 @@ class ReleaseManifestTests(unittest.TestCase):
         module = self.load_module()
         return module.release_items(root)
 
-    def test_current_repository_only_manifest_is_valid(self):
+    def test_current_declared_manifest_is_valid(self):
         self.assertTrue(MANIFEST.exists(), ".github/releases/release.json must exist")
         data = json.loads(MANIFEST.read_text(encoding="utf-8"))
         repository = data["repository"]
-        notes = ROOT / repository["notes_file"]
-        self.assertEqual(data["plugins"], [])
-        self.assertTrue(notes.exists(), f"{repository['notes_file']} must exist")
+        self.assertTrue((ROOT / repository["notes_file"]).exists(), f"{repository['notes_file']} must exist")
+        for plugin in data["plugins"]:
+            self.assertTrue((ROOT / plugin["notes_file"]).exists(), f"{plugin['notes_file']} must exist")
         self.assertEqual(self.validate(ROOT), [])
+        expected = [("repository", "repository", repository["version"], repository["tag"])]
+        expected.extend(
+            ("plugin", plugin["plugin"], plugin["version"], plugin["tag"])
+            for plugin in data["plugins"]
+        )
         self.assertEqual(
             [(item.kind, item.name, item.version, item.tag) for item in self.items(ROOT)],
-            [("repository", "repository", repository["version"], repository["tag"])],
+            expected,
         )
 
     def test_repository_tag_must_equal_version(self):

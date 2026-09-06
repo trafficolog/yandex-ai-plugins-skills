@@ -1,18 +1,8 @@
 from pathlib import Path
-import json
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PLUGINS = {
-    "yandex-direct": "2.0.1",
-    "yandex-metrika": "2.0.0",
-    "yandex-webmaster": "2.0.0",
-    "yandex-wordstat": "1.1.2",
-    "yandex-search": "1.0.2",
-    "yandex-seo": "1.1.2",
-    "yandex-marketing": "1.1.0",
-}
 
 
 class Repository109ReleaseSurfaceTests(unittest.TestCase):
@@ -30,12 +20,9 @@ class Repository109ReleaseSurfaceTests(unittest.TestCase):
         self.assertIn("Repository 1.0.9", notes)
         self.assertIn("repository-only", notes.lower())
         self.assertIn("no plugin tags", notes.lower())
-
-    def test_plugin_versions_remain_unchanged(self):
-        for plugin, expected in EXPECTED_PLUGINS.items():
-            for relative in (".codex-plugin/plugin.json", ".claude-plugin/plugin.json"):
-                data = json.loads(self.read(f"plugins/{plugin}/{relative}"))
-                self.assertEqual(data["version"], expected, f"{plugin}/{relative}")
+        self.assertIn("Direct 2.0.1", notes)
+        self.assertIn("Metrika 2.0.0", notes)
+        self.assertIn("Webmaster 2.0.0", notes)
 
 
 if __name__ == "__main__":

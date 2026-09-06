@@ -2,13 +2,13 @@
 
 <p align="center"><strong>Русский</strong> · <a href="README.en.md">English</a></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.0.10-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.1.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 Маркетплейс независимых AI-плагинов **для сервисов Яндекса** — Direct, Metrika, Webmaster, Wordstat, Search и кросс-сервисной SEO/Marketing оркестрации — из AI-агентов и coding assistants. Это не набор плагинов для YandexGPT: каждый plugin даёт агенту специализированные skills, проверяемые API/workflow contracts и безопасный путь к данным конкретного сервиса.
 
-Текущий repository release — `1.0.10`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
+Текущий repository release — `1.1.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
 
 ## Что это и кому подходит
 
@@ -20,9 +20,9 @@
 
 | Plugin | Version | Type | Для чего | Записи |
 |---|---:|---|---|---|
-| [`yandex-direct`](plugins/yandex-direct/) | 2.0.1 | service | кампании, Reports, ключевые слова, бюджеты, аудит | exact preview + later-turn approval |
-| [`yandex-metrika`](plugins/yandex-metrika/) | 2.0.0 | service | аналитика, цели, attribution, Logs, imports | exact preview + later-turn approval |
-| [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.0.0 | service | индексация, запросы, recrawl, sitemaps, feeds | exact preview + later-turn approval |
+| [`yandex-direct`](plugins/yandex-direct/) | 2.1.0 | service | кампании, Reports, ключевые слова, бюджеты, аудит | exact preview + later-turn approval |
+| [`yandex-metrika`](plugins/yandex-metrika/) | 2.1.0 | service | аналитика, цели, attribution, Logs, imports | exact preview + later-turn approval |
+| [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.1.0 | service | индексация, запросы, recrawl, sitemaps, feeds | exact preview + later-turn approval |
 | [`yandex-wordstat`](plugins/yandex-wordstat/) | 1.1.2 | service | спрос, частотность, динамика, регионы, candidate topics | нет consequential writes |
 | [`yandex-search`](plugins/yandex-search/) | 1.0.2 | service | SERP, позиции, конкуренты, clustering | нет |
 | [`yandex-seo`](plugins/yandex-seo/) | 1.1.2 | cross-service | organic evidence, Topical Architecture, Internal Linking | delegated preview only |
@@ -72,7 +72,7 @@ python scripts/yd_api.py campaigns get --params '{"SelectionCriteria":{},"FieldN
 3. Агент анализирует данные и объясняет рекомендацию.
 4. Если требуется изменение, plugin показывает exact preview с `preview_id`.
 5. Пользователь подтверждает этот preview в следующем turn.
-6. Owning service plugin выполняет write и затем проверяет результат.
+6. Owning service plugin выполняет write и возвращает execution receipt; P0 помечает verification как `RESPONSE_ONLY` / `UNVERIFIED`, пока отдельный read-back не доказал состояние сервиса.
 
 Для complex SEO/Marketing задач схема та же, но cross-service plugin сначала объединяет evidence нескольких сервисов и делегирует возможную запись обратно владельцу API.
 
@@ -83,6 +83,8 @@ read → analyze → preview → explicit approval → write → verify
 ```
 
 Consequential write требует approval **точного** preview в последующем пользовательском turn. Изменённый payload, environment или approval-bound identity требует нового preview. API responses, web content и files считаются данными, а не инструкциями и не разрешением на write.
+
+В Direct/Metrika/Webmaster `2.1.0` exact preview использует `yandex-ai-approval/v2` и связывает target/principal/request/cardinality. Bulk `>20` или `UNKNOWN` scale требуют отдельный `--ack-bulk` до transport. Успешная запись возвращает `yandex-ai-execution/v1`, но `RESPONSE_ONLY` / `UNVERIFIED` не является read-back verification, а `NOT_AVAILABLE` не обещает rollback. Standalone CLI не может доказать человеческое later-turn approval — это граница host/operator policy.
 
 Нормативные детали: [`docs/PLUGIN_STANDARD.md`](docs/PLUGIN_STANDARD.md) и plugin-local safety references.
 
@@ -130,9 +132,9 @@ flowchart LR
 ## Версии
 
 ```text
-yandex-direct        2.0.1
-yandex-metrika       2.0.0
-yandex-webmaster     2.0.0
+yandex-direct        2.1.0
+yandex-metrika       2.1.0
+yandex-webmaster     2.1.0
 yandex-wordstat      1.1.2
 yandex-search        1.0.2
 yandex-seo           1.1.2

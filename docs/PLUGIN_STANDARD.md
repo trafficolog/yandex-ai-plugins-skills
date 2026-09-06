@@ -177,3 +177,18 @@ Shared runtime package допустим только если одновреме
 Repository Python support floor для validator и root tests — **Python 3.10+**. CI обязан проверять root validation минимум на Python 3.10 и текущем Python 3.13; функциональные jobs отдельных plugins могут оставаться на 3.13, пока plugin-specific contract не требует более широкой matrix.
 
 Validator проверяет оба marketplace format, manifest families, SemVer consistency, capability matrices, evals, secrets/paths, cross-service no-transport boundary, bilingual documentation pairs и changelog release-marker parity. Path-aware CI моделирует producer → consumer dependencies. Freshness age в PR/push scoped к изменённым controlled references; scheduled workflow выполняет strict whole-repository freshness check.
+
+## 13. Исполняемая write safety v2
+
+Для owning write-capable helpers consequential approval envelope имеет schema `yandex-ai-approval/v2`. Helper механически привязывает exact operation, target, authenticated principal, operation cardinality (`KNOWN` или `UNKNOWN`) и заявленные safety capabilities. Repository policy задаёт `BULK_THRESHOLD = 20`; это внутренний safety threshold репозитория, а не лимит Yandex API. Bulk-операция или операция с `UNKNOWN` scale после exact preview требует дополнительного `--ack-bulk`.
+
+Успешный consequential write возвращает receipt schema `yandex-ai-execution/v1`. На этапе P0 capability verification остаётся `RESPONSE_ONLY`, state — `UNVERIFIED`, rollback capability — `NOT_AVAILABLE`. Такой receipt доказывает только факт прохождения локальных gates и получения ответа transport/API; он не является доказательством verified final state.
+
+Механически enforced helper:
+- exact v2 operation binding;
+- target/authenticated-principal binding;
+- scale/bulk gate;
+- service-owned execution boundary;
+- structured receipt и truthful capability declaration.
+
+Host/operator policy остаётся отдельной границей. Standalone CLI не может доказать, что пользователь действительно увидел preview и лично передал approval в позднем разговорном ходе. Поэтому later-turn human approval остаётся обязательным orchestration policy, но не заявляется как факт, доказанный самим CLI helper.

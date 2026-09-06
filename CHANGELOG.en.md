@@ -4,6 +4,28 @@
 
 All notable repository-level changes are documented here. Plugins use independent SemVer and keep their own changelogs.
 
+## [1.1.0] — 2026-09-05
+
+P0 executable write-safety release: the repository contract and three write-capable service plugins move to one approval/scale/receipt baseline without claiming unsupported read-back verification or rollback.
+
+### Changed
+
+- Direct, Metrika, and Webmaster use `yandex-ai-approval/v2`, binding exact target/request, authenticated-principal identity, cardinality, and declared safety capability; secrets are not exposed in previews.
+- Repository safety threshold `20` is explicitly internal policy, not a Yandex API limit. Bulk `>20` and `UNKNOWN` scale require a separate `--ack-bulk` after exact `preview_id` approval and are blocked before transport without it.
+- Successful consequential execution returns `yandex-ai-execution/v1`; current verification capability is truthfully declared as `RESPONSE_ONLY` / `UNVERIFIED`, with rollback `NOT_AVAILABLE`.
+- Metrika preserves exact-file SHA-256, `artifact_rows`, and expense `risk_flags`; Logs/import remain single API operations (`KNOWN`, `items=1`) regardless of file row count.
+- Webmaster preserves credential-safe binding for embedded URL Basic Auth through OAuth-keyed/domain-separated HMAC and exact cardinality for feed batches.
+- Repository convergence tests and `CONTRACT_MATRIX.json` check behavioral agreement across the three local safety kernels without introducing a root shared runtime dependency.
+- A standalone CLI mechanically proves exact preview binding but cannot prove that a human approved the preview in a separate later conversational turn; human provenance remains mandatory host/operator policy.
+
+### Plugin releases
+
+Direct `2.1.0`, Metrika `2.1.0`, Webmaster `2.1.0`.
+
+### Other plugin versions unchanged
+
+Wordstat `1.1.2`, Search `1.0.2`, SEO `1.1.2`, Marketing `1.1.0`.
+
 ## [1.0.10] — 2026-09-05
 
 Repository-only supply-chain hardening release closing issue #43. Production runtime and plugin SemVer are unchanged.

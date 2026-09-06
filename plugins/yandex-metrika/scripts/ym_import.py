@@ -14,9 +14,11 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 try:
+    from . import _safety
     from ._approval import preview_id, require_approval
     from ._http import oauth_headers, redact_headers
 except ImportError:
+    import _safety
     from _approval import preview_id, require_approval
     from _http import oauth_headers, redact_headers
 
@@ -38,6 +40,7 @@ DIRECT_SOURCE_TOKENS = {"direct", "директ"}
 DIRECT_UTM_SOURCES = {"yandex", "яндекс", "yandexdirect", "яндексдирект", "ya"}
 DIRECT_UTM_MEDIA = {"cpc", "ppc", "paidsearch", "context", "контекст"}
 DIRECT_TRAFFIC_SOURCE_DETAILS = {"yandexdirectstar"}
+AUTH_PRINCIPAL_DOMAIN = b"yandex-metrika-auth-principal/v2"
 
 
 def _read_file_bytes(path: Path) -> bytes:
@@ -227,6 +230,7 @@ def import_approval_envelope(
     counter_id: int,
     file_path: Path,
     *,
+    token: str,
     source: str | None = None,
     allow_direct_risk: bool = False,
     _file_bytes: bytes | None = None,
@@ -236,19 +240,36 @@ def import_approval_envelope(
     file_bytes = _read_file_bytes(file_path) if _file_bytes is None else _file_bytes
     file_info = _inspect_csv_bytes(file_path, file_bytes)
     normalized_query = _normalized_import_query(kind, source, query)
+    warnings = _expense_warnings(kind, source, allow_direct_risk, file_bytes)
+    cardinality = _safety.known_cardinality(1, artifact_rows=file_info["rows"])
+    safety = {
+        "verification": "RESPONSE_ONLY",
+        "rollback": "NOT_AVAILABLE",
+        "risk_flags": warnings,
+    }
+    url = import_url(kind, counter_id, normalized_query)
     return {
-        "schema": "yandex-ai-approval/v1",
+        "schema": _safety.APPROVAL_SCHEMA,
         "plugin": "yandex-metrika",
         "operation": f"import.{kind}",
-        "method": "POST",
+        "request": {
+            "method": "POST",
+            "environment": "production",
+            "api_version": "management/v1",
+            "url": url,
+            "path": f"counter/{int(counter_id)}/{IMPORT_PATHS[kind]}",
+            "query": {k: v for k, v in normalized_query.items() if v is not None},
+            "body": None,
+        },
         "target": {
             "counter_id": int(counter_id),
             "kind": kind,
             "source": source,
             "allow_direct_risk": bool(allow_direct_risk),
+            "auth_principal_binding": _safety.principal_binding(
+                token, domain=AUTH_PRINCIPAL_DOMAIN
+            ),
         },
-        "url": import_url(kind, counter_id, normalized_query),
-        "body": None,
         "artifacts": [
             {
                 "name": file_info["name"],
@@ -256,6 +277,8 @@ def import_approval_envelope(
                 "sha256": file_info["sha256"],
             }
         ],
+        "cardinality": cardinality,
+        "safety": safety,
     }
 
 
@@ -300,6 +323,7 @@ def _prepare_import_snapshot(
         kind,
         counter_id,
         file_path,
+        token=token,
         source=source,
         allow_direct_risk=allow_direct_risk,
         _file_bytes=file_bytes,
@@ -314,7 +338,10 @@ def _prepare_import_snapshot(
         "counter_id": int(counter_id),
         "consequential": True,
         "warnings": warnings,
+        "approval_schema": envelope["schema"],
         "preview_id": preview_id(envelope),
+        "cardinality": envelope["cardinality"],
+        "safety": envelope["safety"],
     }
     return preview, file_bytes
 
@@ -363,26 +390,34 @@ def execute_import(
         allow_direct_risk=allow_direct_risk,
         **query,
     )
-    require_approval(
-        import_approval_envelope(
-            kind,
-            counter_id,
-            file_path,
-            source=source,
-            allow_direct_risk=allow_direct_risk,
-            _file_bytes=file_bytes,
-            **query,
-        ),
-        approve,
+    envelope = import_approval_envelope(
+        kind,
+        counter_id,
+        file_path,
+        token=token,
+        source=source,
+        allow_direct_risk=allow_direct_risk,
+        _file_bytes=file_bytes,
+        **query,
     )
+    approved_preview = require_approval(envelope, approve)
     content_type, body = build_multipart_file(Path(file_path), file_bytes=file_bytes)
     headers = oauth_headers(token, content_type=content_type)
     request = Request(preview["url"], data=body, headers=headers, method="POST")
     with opener(request, timeout=timeout) as response:
         raw = response.read()
-    if not raw:
-        return None
-    return json.loads(raw.decode("utf-8"))
+    payload = None if not raw else json.loads(raw.decode("utf-8"))
+    return _safety.execution_receipt(
+        preview_id=approved_preview,
+        plugin="yandex-metrika",
+        operation=envelope["operation"],
+        target=envelope["target"],
+        cardinality=envelope["cardinality"],
+        result=payload,
+        verification_capability="RESPONSE_ONLY",
+        verification_state="UNVERIFIED",
+        rollback_capability="NOT_AVAILABLE",
+    )
 
 
 def run_import(

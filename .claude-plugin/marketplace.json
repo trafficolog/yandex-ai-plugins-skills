@@ -2,9 +2,9 @@
   "name": "yandex-ai-plugin",
   "owner": {"name": "Trafficolog"},
   "plugins": [
-    {"name":"yandex-direct-suite","source":"./plugins/yandex-direct","description":"Yandex Direct workflow skills updated for 2026 API behavior.","version":"2.0.1"},
-    {"name":"yandex-metrika","source":"./plugins/yandex-metrika","description":"Yandex Metrika analytics, data-quality, Logs and import workflow skills.","version":"2.0.0"},
-    {"name":"yandex-webmaster","source":"./plugins/yandex-webmaster","description":"Yandex Webmaster SEO, indexing, query, recrawl, sitemap, feed and export workflow skills.","version":"2.0.0"},
+    {"name":"yandex-direct-suite","source":"./plugins/yandex-direct","description":"Yandex Direct workflow skills updated for 2026 API behavior.","version":"2.1.0"},
+    {"name":"yandex-metrika","source":"./plugins/yandex-metrika","description":"Yandex Metrika analytics, data-quality, Logs and import workflow skills.","version":"2.1.0"},
+    {"name":"yandex-webmaster","source":"./plugins/yandex-webmaster","description":"Yandex Webmaster SEO, indexing, query, recrawl, sitemap, feed and export workflow skills.","version":"2.1.0"},
     {"name":"yandex-wordstat","source":"./plugins/yandex-wordstat","description":"Yandex Wordstat demand, semantics, candidate topic-map, dynamics, regions and trend workflow skills.","version":"1.1.2"},
     {"name":"yandex-search","source":"./plugins/yandex-search","description":"Yandex Search web SERP, batch, ranking, competitor and URL-overlap clustering workflow skills.","version":"1.0.2"},
     {"name":"yandex-seo","source":"./plugins/yandex-seo","description":"Cross-service Yandex SEO evidence, topical architecture, internal linking, opportunity, quality and prioritization workflow skills.","version":"1.1.2"},

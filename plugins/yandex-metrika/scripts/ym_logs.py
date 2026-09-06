@@ -10,14 +10,17 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 try:
+    from . import _safety
     from ._approval import preview_id, require_approval
     from ._http import oauth_headers, redact_headers, request_json
 except ImportError:
+    import _safety
     from _approval import preview_id, require_approval
     from _http import oauth_headers, redact_headers, request_json
 
 BASE = "https://api-metrika.yandex.net/management/v1"
 CONSEQUENTIAL_ACTIONS = {"create", "clean"}
+AUTH_PRINCIPAL_DOMAIN = b"yandex-metrika-auth-principal/v2"
 
 
 def _anniversary(day: date) -> date:
@@ -76,6 +79,7 @@ def logs_approval_envelope(
     counter_id: int,
     action: str,
     *,
+    token: str,
     request_id: int | None = None,
     part_number: int | None = None,
     query: dict[str, Any] | None = None,
@@ -85,20 +89,37 @@ def logs_approval_envelope(
         logs_endpoint(counter_id, action, request_id=request_id, part_number=part_number),
         query,
     )
+    cardinality = _safety.known_cardinality(1)
+    safety = {
+        "verification": "RESPONSE_ONLY",
+        "rollback": "NOT_AVAILABLE",
+        "risk_flags": [],
+    }
     return {
-        "schema": "yandex-ai-approval/v1",
+        "schema": _safety.APPROVAL_SCHEMA,
         "plugin": "yandex-metrika",
         "operation": f"logs.{action}",
-        "method": method,
+        "request": {
+            "method": method,
+            "environment": "production",
+            "api_version": "management/v1",
+            "url": url,
+            "path": url.split("/management/v1/", 1)[-1].split("?", 1)[0],
+            "query": dict(query or {}),
+            "body": None,
+        },
         "target": {
             "counter_id": int(counter_id),
             "action": action,
             "request_id": request_id,
             "part_number": part_number,
+            "auth_principal_binding": _safety.principal_binding(
+                token, domain=AUTH_PRINCIPAL_DOMAIN
+            ),
         },
-        "url": url,
-        "body": None,
         "artifacts": [],
+        "cardinality": cardinality,
+        "safety": safety,
     }
 
 
@@ -117,18 +138,26 @@ def prepare_logs_request(
     envelope = logs_approval_envelope(
         counter_id,
         action,
+        token=token,
         request_id=request_id,
         part_number=part_number,
         query=query,
     )
     result = {
-        "method": envelope["method"],
-        "url": envelope["url"],
+        "method": envelope["request"]["method"],
+        "url": envelope["request"]["url"],
         "headers": redact_headers(oauth_headers(token, content_type="")),
         "consequential": action in CONSEQUENTIAL_ACTIONS,
     }
     if result["consequential"]:
-        result["preview_id"] = preview_id(envelope)
+        result.update(
+            {
+                "approval_schema": envelope["schema"],
+                "preview_id": preview_id(envelope),
+                "cardinality": envelope["cardinality"],
+                "safety": envelope["safety"],
+            }
+        )
     return result
 
 
@@ -144,13 +173,30 @@ def execute_json_action(
     envelope = logs_approval_envelope(
         counter_id,
         action,
+        token=token,
         request_id=request_id,
         query=query,
     )
-    if action in CONSEQUENTIAL_ACTIONS:
-        require_approval(envelope, approve)
-    _, payload = request_json(envelope["method"], envelope["url"], token)
-    return payload
+    approved_preview: str | None = None
+    consequential = action in CONSEQUENTIAL_ACTIONS
+    if consequential:
+        approved_preview = require_approval(envelope, approve)
+    _, payload = request_json(
+        envelope["request"]["method"], envelope["request"]["url"], token
+    )
+    if not consequential:
+        return payload
+    return _safety.execution_receipt(
+        preview_id=approved_preview or "",
+        plugin="yandex-metrika",
+        operation=envelope["operation"],
+        target=envelope["target"],
+        cardinality=envelope["cardinality"],
+        result=payload,
+        verification_capability="RESPONSE_ONLY",
+        verification_state="UNVERIFIED",
+        rollback_capability="NOT_AVAILABLE",
+    )
 
 
 def run_json_action(

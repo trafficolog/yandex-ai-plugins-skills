@@ -56,7 +56,7 @@ class TestMetrikaLogs(unittest.TestCase):
         preview = prepare_logs_request(123, "clean", token="secret", request_id=7)
         self.assertEqual(preview["headers"]["Authorization"], "OAuth ***")
         self.assertTrue(preview["consequential"])
-        envelope = logs_approval_envelope(123, "clean", request_id=7)
+        envelope = logs_approval_envelope(123, "clean", token="secret", request_id=7)
         self.assertEqual(preview["preview_id"], preview_id(envelope))
 
     def test_create_execute_without_approval_is_blocked_before_transport(self):
@@ -99,7 +99,7 @@ class TestMetrikaLogs(unittest.TestCase):
 
     def test_exact_create_approval_executes_once(self):
         query = {"date1": "2026-08-01", "date2": "2026-08-02"}
-        approve = preview_id(logs_approval_envelope(123, "create", query=query))
+        approve = preview_id(logs_approval_envelope(123, "create", token="secret", query=query))
         with patch("scripts.ym_logs.request_json", return_value=({}, {"log_request": {"request_id": 9}})) as request_json:
             result = run_json_action(
                 123,
@@ -110,10 +110,11 @@ class TestMetrikaLogs(unittest.TestCase):
                 approve=approve,
             )
         request_json.assert_called_once()
-        self.assertEqual(result, {"log_request": {"request_id": 9}})
+        self.assertEqual(result["result"], {"log_request": {"request_id": 9}})
+        self.assertEqual(result["schema"], "yandex-ai-execution/v1")
 
     def test_exact_clean_approval_executes_once(self):
-        approve = preview_id(logs_approval_envelope(123, "clean", request_id=7))
+        approve = preview_id(logs_approval_envelope(123, "clean", token="secret", request_id=7))
         with patch("scripts.ym_logs.request_json", return_value=({}, {"success": True})) as request_json:
             result = run_json_action(
                 123,
@@ -124,10 +125,11 @@ class TestMetrikaLogs(unittest.TestCase):
                 approve=approve,
             )
         request_json.assert_called_once()
-        self.assertEqual(result, {"success": True})
+        self.assertEqual(result["result"], {"success": True})
+        self.assertEqual(result["schema"], "yandex-ai-execution/v1")
 
     def test_counter_change_invalidates_approval(self):
-        approve = preview_id(logs_approval_envelope(123, "clean", request_id=7))
+        approve = preview_id(logs_approval_envelope(123, "clean", token="secret", request_id=7))
         with patch("scripts.ym_logs.request_json") as request_json:
             with self.assertRaises(ValueError):
                 run_json_action(
@@ -141,7 +143,7 @@ class TestMetrikaLogs(unittest.TestCase):
         request_json.assert_not_called()
 
     def test_action_change_invalidates_approval(self):
-        approve = preview_id(logs_approval_envelope(123, "clean", request_id=7))
+        approve = preview_id(logs_approval_envelope(123, "clean", token="secret", request_id=7))
         query = {"date1": "2026-08-01", "date2": "2026-08-02"}
         with patch("scripts.ym_logs.request_json") as request_json:
             with self.assertRaises(ValueError):
@@ -156,7 +158,7 @@ class TestMetrikaLogs(unittest.TestCase):
         request_json.assert_not_called()
 
     def test_request_id_change_invalidates_approval(self):
-        approve = preview_id(logs_approval_envelope(123, "clean", request_id=7))
+        approve = preview_id(logs_approval_envelope(123, "clean", token="secret", request_id=7))
         with patch("scripts.ym_logs.request_json") as request_json:
             with self.assertRaises(ValueError):
                 run_json_action(
@@ -172,7 +174,7 @@ class TestMetrikaLogs(unittest.TestCase):
     def test_query_change_invalidates_approval(self):
         approved_query = {"date1": "2026-08-01", "date2": "2026-08-02", "source": "hits"}
         changed_query = {"date1": "2026-08-01", "date2": "2026-08-02", "source": "visits"}
-        approve = preview_id(logs_approval_envelope(123, "create", query=approved_query))
+        approve = preview_id(logs_approval_envelope(123, "create", token="secret", query=approved_query))
         with patch("scripts.ym_logs.request_json") as request_json:
             with self.assertRaises(ValueError):
                 run_json_action(

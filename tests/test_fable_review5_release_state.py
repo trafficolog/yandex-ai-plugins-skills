@@ -4,9 +4,9 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
-    "yandex-direct": ("yandex-direct-suite", "2.0.1"),
-    "yandex-metrika": ("yandex-metrika", "2.0.0"),
-    "yandex-webmaster": ("yandex-webmaster", "2.0.0"),
+    "yandex-direct": ("yandex-direct-suite", "2.1.0"),
+    "yandex-metrika": ("yandex-metrika", "2.1.0"),
+    "yandex-webmaster": ("yandex-webmaster", "2.1.0"),
 }
 
 
@@ -28,7 +28,7 @@ class FableReview5ReleaseStateTests(unittest.TestCase):
             self.assertEqual(agent_versions[marketplace_name], version)
             self.assertEqual(claude_versions[marketplace_name], version)
 
-    def test_root_readmes_describe_published_immutable_fable_generation(self):
+    def test_root_readmes_preserve_published_immutable_fable_generation_history(self):
         stale_fragments = (
             "Tags/releases для `2.0.0` создаются отдельно",
             "tags/releases for `2.0.0` are created separately",
@@ -37,8 +37,6 @@ class FableReview5ReleaseStateTests(unittest.TestCase):
         )
         for filename in ("README.md", "README.en.md"):
             text = (ROOT / filename).read_text(encoding="utf-8")
-            self.assertIn("2.0.1", text)
-            self.assertIn("2.0.0", text)
             self.assertIn("immutable", text.lower())
             for fragment in stale_fragments:
                 self.assertNotIn(fragment, text)

@@ -2,7 +2,7 @@
 
 [**Русский**](README.md) · [English](README.en.md)
 
-Версия `2.0.1`. Service plugin для Яндекс Директа: кампании, Reports API, аудит, ключевые слова/минус-фразы, бюджеты, оптимизация и low-level API workflows.
+Версия `2.1.0`. Service plugin для Яндекс Директа: кампании, Reports API, аудит, ключевые слова/минус-фразы, бюджеты, оптимизация и low-level API workflows.
 
 ## Модель выполнения
 
@@ -75,7 +75,9 @@ Live-вызов API helper возвращает исходный JSON Yandex Dir
 
 ## Safety enforcement boundary
 
-Helper-level executable guarantees: exact-preview approval binding, environment/auth-principal binding, env-only OAuth, service allowlist и bounded transport errors. Сохранение rollback context и усиленная проверка bulk edits `>20` остаются agent/operator policy; generic helper-level enforcement для них не заявляется до отдельного safety design.
+Consequential preview использует `yandex-ai-approval/v2`: exact service/method/environment/body, `Client-Login`, authenticated-principal binding, cardinality и safety capability входят в один digest. Для известных entity-list writes helper считает exact item count; opaque write shapes получают `UNKNOWN` scale. Repository threshold `20` — внутренняя safety policy, а не Yandex API limit. Bulk `>20` и `UNKNOWN` execution блокируются до transport без `--ack-bulk`, даже при правильном `--approve <preview_id>`.
+
+Успешный write возвращает `yandex-ai-execution/v1` receipt с тем же `preview_id`. Текущая capability declaration честно остаётся `RESPONSE_ONLY` + `UNVERIFIED`; rollback — `NOT_AVAILABLE`. Это не read-back verification и не автоматический rollback. Standalone CLI также не может доказать later-turn human approval: host/operator обязан показать exact preview и получить отдельное последующее пользовательское approval.
 
 ## Helpers
 
@@ -84,6 +86,7 @@ export YANDEX_DIRECT_TOKEN='...'
 python scripts/yd_api.py campaigns get --params '{"SelectionCriteria":{},"FieldNames":["Id","Name","Status"]}'
 python scripts/yd_api.py campaigns update --params-file update.json # preview
 python scripts/yd_api.py campaigns update --params-file update.json --execute --approve <preview_id>
+python scripts/yd_api.py campaigns update --params-file bulk-update.json --execute --approve <preview_id> --ack-bulk
 python scripts/yd_api.py campaigns get --params '{}' --sandbox
 python scripts/yd_report.py campaign 2026-08-01 2026-08-31 --output report.tsv
 ```

@@ -34,9 +34,11 @@ class TestWebmasterApi(unittest.TestCase):
         self.assertTrue(preview["consequential"])
         self.assertEqual(preview["headers"]["Authorization"], "OAuth ***")
         self.assertEqual(preview["body"]["host_url"], "https://example.com")
+        self.assertEqual(preview["approval_schema"], "yandex-ai-approval/v2")
         envelope = yw_api.approval_envelope(
             method="POST",
             path="user/1/hosts",
+            token="secret",
             body=body,
         )
         self.assertEqual(preview["preview_id"], preview_id(envelope))
@@ -131,6 +133,7 @@ class TestWebmasterApi(unittest.TestCase):
         approve = preview_id(yw_api.approval_envelope(
             method="POST",
             path="user/1/hosts",
+            token="secret",
             body=body,
         ))
         transport = Mock(return_value={"host_id": "h"})
@@ -141,13 +144,15 @@ class TestWebmasterApi(unittest.TestCase):
             body=body,
             execute=True,
             approve=approve,
+            ack_bulk=True,
             transport=transport,
         )
         transport.assert_called_once()
-        self.assertEqual(result, {"host_id": "h"})
+        self.assertEqual(result["result"], {"host_id": "h"})
+        self.assertEqual(result["schema"], "yandex-ai-execution/v1")
 
     def _assert_mutation_invalidates(self, approved_kwargs, changed_kwargs):
-        approve = preview_id(yw_api.approval_envelope(**approved_kwargs))
+        approve = preview_id(yw_api.approval_envelope(token="secret", **approved_kwargs))
         transport = Mock()
         with self.assertRaises(ValueError):
             yw_api.run_request(
@@ -244,11 +249,13 @@ class TestWebmasterApi(unittest.TestCase):
                     token="secret",
                     execute=True,
                     approve=preview["preview_id"],
+                    ack_bulk=bool(preview["cardinality"]["bulk"]),
                     transport=transport,
                     **kwargs,
                 )
                 transport.assert_called_once()
-                self.assertEqual(result, {"ok": True})
+                self.assertEqual(result["result"], {"ok": True})
+                self.assertEqual(result["schema"], "yandex-ai-execution/v1")
 
     def test_api_version_is_restricted(self):
         with self.assertRaises(ValueError):

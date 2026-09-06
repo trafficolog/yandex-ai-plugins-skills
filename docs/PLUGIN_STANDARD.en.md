@@ -177,3 +177,18 @@ Without such a mechanism, a small service-local adapter may remain duplicated. I
 The repository Python support floor for the validator and root tests is **Python 3.10+**. CI must run root validation on at least Python 3.10 and the current Python 3.13; functional plugin jobs may remain on 3.13 unless a plugin-specific contract requires a wider matrix.
 
 Validation covers both marketplace formats, manifest families, SemVer consistency, capability matrices, evals, secrets/paths, the cross-service no-transport boundary, bilingual documentation pairs, and changelog release-marker parity. Path-aware CI models producer → consumer dependencies. Freshness age is scoped to changed controlled references on PR/push; the scheduled workflow performs the strict whole-repository freshness check.
+
+## 13. Executable write safety v2
+
+For owning write-capable helpers, every consequential approval envelope uses schema `yandex-ai-approval/v2`. The helper mechanically binds the exact operation, target, authenticated principal, operation cardinality (`KNOWN` or `UNKNOWN`), and declared safety capabilities. Repository policy sets `BULK_THRESHOLD = 20`; this is an internal safety threshold, not a Yandex API limit. A bulk operation or an operation with `UNKNOWN` scale requires `--ack-bulk` after the exact preview.
+
+A successful consequential write returns receipt schema `yandex-ai-execution/v1`. In P0 the verification capability is `RESPONSE_ONLY`, state is `UNVERIFIED`, and rollback capability is `NOT_AVAILABLE`. That receipt proves only that local gates passed and the transport/API returned a response; it is not proof of a verified final state.
+
+Mechanically enforced by the helper:
+- exact v2 operation binding;
+- target/authenticated-principal binding;
+- scale/bulk gate;
+- service-owned execution boundary;
+- structured receipt and truthful capability declaration.
+
+Host/operator policy remains a separate boundary. A standalone CLI cannot prove that the user actually saw the preview or personally supplied approval in a later conversational turn. Later-turn human approval therefore remains mandatory orchestration policy, but is not claimed as a fact proven by the CLI helper.

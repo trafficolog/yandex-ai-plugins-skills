@@ -2,6 +2,15 @@
 
 [**Русский**](CHANGELOG.md) · [English](CHANGELOG.en.md)
 
+## [2.1.0] — 2026-09-05
+
+- Consequential Metrika operations переведены на `yandex-ai-approval/v2` с authenticated-principal binding, exact target/request, cardinality и safety capability.
+- Generic Management write получает `UNKNOWN` scale и после exact `--approve <preview_id>` дополнительно требует `--ack-bulk` до transport; repository threshold `20` — safety policy, не лимит Yandex API.
+- Logs `create`/`clean` и каждый import моделируются как один API operation (`KNOWN`, `items=1`), поэтому число CSV rows само по себе не превращает upload в bulk API operation.
+- Import preview сохраняет прежнюю защиту exact artifact bytes: SHA-256 файла, `artifact_rows` и expense `risk_flags` approval-bound; Direct/unverified expense provenance по-прежнему требует отдельный explicit risk override.
+- Успешный consequential call возвращает `yandex-ai-execution/v1`; verification объявлена как `RESPONSE_ONLY` / `UNVERIFIED`, rollback как `NOT_AVAILABLE`, без ложного read-back/rollback claim.
+- Standalone CLI проверяет exact approval механически, но не доказывает later-turn human approval; эту provenance boundary обеспечивает host/operator.
+
 ## [2.0.0] — 2026-09-03
 
 - Breaking safety contract: `--execute` больше не является достаточным разрешением на consequential write; после отдельного later-turn user approval требуется `--execute --approve <preview_id>` для exact preview.
