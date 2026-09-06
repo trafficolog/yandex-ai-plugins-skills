@@ -133,7 +133,7 @@ class ProjectMemoryBaselineTests(unittest.TestCase):
             self.assertTrue(snapshot.is_file())
 
             checked = subprocess.run(
-                [sys.executable, str(CLI), "check", "--root", str(root), "--at", "2026-09-06T08:00:01Z", "--json"],
+                [sys.executable, str(CLI), "check", "--root", str(root), "--at", "2026-09-07T08:00:01Z", "--json"],
                 cwd=ROOT, text=True, capture_output=True, check=False,
             )
             self.assertEqual(checked.returncode, 0, checked.stderr)
