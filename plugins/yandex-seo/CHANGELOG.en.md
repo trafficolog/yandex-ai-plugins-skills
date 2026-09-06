@@ -2,6 +2,18 @@
 
 [Русский](CHANGELOG.md) · [**English**](CHANGELOG.en.md)
 
+## [1.2.0] — 2026-09-06
+
+### Weekly Organic Report
+
+- Added `yandex-seo-weekly-report` and normative `seo-weekly-organic-report/v1` for normalized Webmaster/Metrika evidence, exact current/comparison periods, explicit coverage/provenance/limitations, and delegated findings.
+- Added `yandex-ai-artifact-manifest/v1`: managed relative paths, roles/media types, SHA-256, and immutable snapshot semantics with exact idempotent replay and no overwrite of a conflicting artifact set.
+- `report.html` is self-contained with restrictive CSP, escaped source/user text, no CDN, remote fonts, analytics, or network fetch; `report.json` remains the source of truth.
+- Mermaid/DOT exports are deterministic and emitted only when backed by actual source structures.
+- Added `demo`/`build` CLI modes plus a sanitized offline fixture; the demo needs no credentials or network.
+- Optional P1 context is limited to project identity plus active `USER_STATED` facts; decisions, hypotheses, and stale baselines do not become fresh evidence.
+- Every delegated recommendation is `PREVIEW-ONLY`; SEO remains transport-free/read-only and does not expand P0 approval/write authority.
+
 ## [1.1.2] — 2026-09-03
 
 - Empirical boundary-changing decisions (`CREATE|MERGE|SPLIT|REDIRECT|SECTION_ONLY|BRIDGE|NO_PAGE`) now require Search-owned provenance; `MERGE`/`REDIRECT` also require existing-page/URL evidence.

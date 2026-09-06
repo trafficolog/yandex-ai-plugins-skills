@@ -1,10 +1,10 @@
 {
   "name": "yandex-seo",
-  "description": "Cross-service Yandex SEO evidence analysis, topical architecture and internal-link planning over Wordstat, Search, Webmaster and Metrika outputs.",
-  "version": "1.1.2",
+  "description": "Cross-service Yandex SEO evidence analysis, topical architecture, internal-link planning and weekly organic reporting over Wordstat, Search, Webmaster and Metrika outputs.",
+  "version": "1.2.0",
   "author": {"name": "Trafficolog"},
   "license": "MIT",
-  "keywords": ["yandex", "seo", "wordstat", "search", "webmaster", "metrika", "topical-architecture", "semantic-cocoon", "internal-linking"],
+  "keywords": ["yandex", "seo", "wordstat", "search", "webmaster", "metrika", "topical-architecture", "semantic-cocoon", "internal-linking", "weekly-report"],
   "skills": "./skills/",
-  "interface": {"displayName":"Yandex SEO","shortDescription":"Cross-service SEO evidence, topical architecture and prioritization.","longDescription":"Read-only orchestration combining demand, SERP, Webmaster visibility and Metrika performance evidence into reproducible SEO findings, topical architecture, preview-only internal-link plans and delegated action previews.","developerName":"Trafficolog","category":"SEO","capabilities":["SEO","Research","Analysis","Orchestration"]}
+  "interface": {"displayName":"Yandex SEO","shortDescription":"Cross-service SEO evidence, architecture and weekly reporting.","longDescription":"Read-only orchestration combining demand, SERP, Webmaster visibility and Metrika performance evidence into reproducible SEO findings, topical architecture, preview-only internal-link plans, weekly organic artifact reports and delegated action previews.","developerName":"Trafficolog","category":"SEO","capabilities":["SEO","Research","Analysis","Orchestration"]}
 }

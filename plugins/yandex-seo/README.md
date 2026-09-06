@@ -2,9 +2,9 @@
 
 [**Русский**](README.md) · [English](README.en.md)
 
-Версия `1.1.2`. Read-only cross-service orchestration над structured outputs Wordstat, Search, Webmaster и Metrika. Плагин **не содержит Yandex API client/credentials и не выполняет live writes**.
+Версия `1.2.0`. Read-only cross-service orchestration над structured outputs Wordstat, Search, Webmaster и Metrika. Плагин **не содержит Yandex API client/credentials и не выполняет live writes**.
 
-> Phase 7 `1.1.0` добавил Topical Architecture и Internal Linking; patch `1.1.1` усиливает transport-free artifact integrity: structural nodes используют field whitelist, а candidate-link `evidence` обязан быть list. Search остаётся владельцем SERP-overlap clustering.
+> `1.2.0` добавляет transport-free Weekly Organic Report с immutable portable artifacts. Phase 7 `1.1.0` ранее добавил Topical Architecture и Internal Linking; Search остаётся владельцем SERP-overlap clustering.
 
 Marketplace policy: `.agents` entry использует `authentication: ON_USE`; для transport-free SEO authentication выполняется только в owning service plugins. Полная семантика deferred-auth metadata и transport ownership: [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md).
 
@@ -59,6 +59,7 @@ Audit findings включают `ORPHAN_PAGE`, `STRUCTURAL_PARENT_LINK_MISSING`,
 | Content gaps / cannibalization / CTR / conversion analysis | yes | no | optional | pure-data | yes |
 | Topical Architecture / semantic cocoon | yes | no | optional | pure-data | yes |
 | Internal-link plan / audit | yes | preview only | optional | pure-data | yes |
+| Weekly Organic Report / portable artifacts | yes | no | optional | pure-data | yes |
 | Period / geo / search / device alignment | yes | no | optional | pure-data | yes |
 | Technical finding action preview | yes | delegated preview only | optional | no transport | yes |
 | Transparent finding prioritization | yes | delegated preview only | optional | pure-data | yes |
@@ -70,3 +71,15 @@ Wordstat demand, Webmaster visibility, Search point-in-time context и Metrika v
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Weekly Organic Report
+
+`yandex-seo-weekly-report` формирует read-only `seo-weekly-organic-report/v1` из нормализованных Webmaster/Metrika evidence и упаковывает результат в immutable artifact set с `yandex-ai-artifact-manifest/v1`. `report.json` является нормативным источником; `report.html` — self-contained представление без CDN, remote fonts, analytics или network fetch. Delegated recommendations всегда маркируются `PREVIEW-ONLY` и не являются approval на запись.
+
+Быстрый offline demo не требует Yandex credentials или сети:
+
+```bash
+python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
+```
+
+Артефакты включают `report.json`, `report.html`, `manifest.json` и только те Mermaid/DOT диаграммы, для которых реально присутствуют source structures. Существующий artifact directory не перезаписывается: exact deterministic replay разрешён только при совпадении всех managed bytes/hash, иначе workflow fail-closed.

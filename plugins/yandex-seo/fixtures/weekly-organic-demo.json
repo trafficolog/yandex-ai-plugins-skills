@@ -1,0 +1,166 @@
+{
+  "project": {
+    "id": "weekly-organic-demo",
+    "name": "Weekly Organic Demo"
+  },
+  "period": {
+    "from": "2026-08-24",
+    "to": "2026-08-30"
+  },
+  "comparison_period": {
+    "from": "2026-08-17",
+    "to": "2026-08-23"
+  },
+  "webmaster": {
+    "coverage": "PARTIAL",
+    "source": {
+      "site": "https://example.test/",
+      "limit": 100,
+      "offset": 0,
+      "filters": {
+        "device": "ALL"
+      }
+    },
+    "limitations": [
+      "WEBMASTER_TOP_N"
+    ],
+    "evidence": [
+      {
+        "evidence_id": "demo-wm-q1",
+        "claim_class": "OBSERVED",
+        "source": "yandex-webmaster",
+        "metric": "clicks",
+        "value": 42
+      }
+    ],
+    "query_rows": [
+      {
+        "query_id": "demo-query-1",
+        "query": "example organic query",
+        "current": {
+          "impressions": 420,
+          "clicks": 42,
+          "ctr": 0.1,
+          "position": 4.5
+        },
+        "previous": {
+          "impressions": 360,
+          "clicks": 30,
+          "ctr": 0.0833333333,
+          "position": 5.4
+        },
+        "evidence_ids": [
+          "demo-wm-q1"
+        ]
+      }
+    ]
+  },
+  "metrika": {
+    "coverage": "COMPLETE",
+    "source": {
+      "counter_id": "demo-counter",
+      "quality": {
+        "sampled": false,
+        "sample_share": 1.0,
+        "sample_size": 1200,
+        "sample_space": 1200,
+        "data_lag": 0,
+        "contains_sensitive_data": false,
+        "total_rows_rounded": false
+      }
+    },
+    "limitations": [],
+    "evidence": [
+      {
+        "evidence_id": "demo-m-page1",
+        "claim_class": "OBSERVED",
+        "source": "yandex-metrika",
+        "metric": "visits",
+        "value": 180
+      }
+    ],
+    "page_rows": [
+      {
+        "page_id": "home",
+        "url": "https://example.test/",
+        "current": {
+          "visits": 180,
+          "users": 155
+        },
+        "previous": {
+          "visits": 150,
+          "users": 132
+        },
+        "evidence_ids": [
+          "demo-m-page1"
+        ]
+      }
+    ]
+  },
+  "delegated_previews": [
+    {
+      "preview_id": "demo-preview-1",
+      "owner": "cms",
+      "operation": "review organic landing title",
+      "status": "PREVIEW"
+    }
+  ],
+  "structures": {
+    "structural_tree": {
+      "nodes": [
+        {
+          "page_id": "home",
+          "title": "Home",
+          "url": "https://example.test/",
+          "canonical_parent_id": null
+        },
+        {
+          "page_id": "guide",
+          "title": "Organic Guide",
+          "url": "https://example.test/guide",
+          "canonical_parent_id": "home"
+        }
+      ],
+      "edges": [
+        {
+          "parent_page_id": "home",
+          "child_page_id": "guide"
+        }
+      ]
+    },
+    "semantic_graph": {
+      "nodes": [
+        {
+          "page_id": "home"
+        },
+        {
+          "page_id": "guide"
+        }
+      ],
+      "edges": [
+        {
+          "from_page_id": "home",
+          "to_page_id": "guide",
+          "relation": "SUPPORT"
+        }
+      ]
+    },
+    "clusters": [
+      {
+        "cluster_id": "demo-cluster",
+        "label": "Organic reporting",
+        "queries": [
+          "example organic query"
+        ]
+      }
+    ],
+    "link_plan": [
+      {
+        "from_page_id": "home",
+        "to_page_id": "guide",
+        "relation": "SUPPORT",
+        "anchor_concept": "organic guide"
+      }
+    ]
+  }
+}

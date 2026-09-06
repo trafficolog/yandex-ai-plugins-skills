@@ -64,7 +64,7 @@ class Phase7ContractTests(unittest.TestCase):
             self.assertIn("Internal Linking", text)
             self.assertIn("SERP", text)
             self.assertIn("yandex-wordstat      1.1.2", text)
-            self.assertIn("yandex-seo           1.1.2", text)
+            self.assertIn("yandex-seo           1.2.0", text)
 
 
 if __name__ == "__main__":

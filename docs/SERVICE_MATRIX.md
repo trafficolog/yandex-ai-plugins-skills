@@ -4,7 +4,7 @@
 
 Статус отражает то, что реально поставляется этим репозиторием, а не всю доступность продуктов Яндекса. Production plugins используют independent SemVer.
 
-> **Repository 1.1.0 release state:** Direct, Metrika и Webmaster переходят на `2.1.0` с mechanically enforced `yandex-ai-approval/v2`, authenticated-principal/cardinality binding, bulk/unknown pre-transport gate и `yandex-ai-execution/v1` receipts. Wordstat, Search, SEO и Marketing остаются на своих текущих версиях.
+> **Repository 1.3.0 release state:** Yandex SEO переходит на `1.2.0` с transport-free Weekly Organic Report, `seo-weekly-organic-report/v1`, immutable `yandex-ai-artifact-manifest/v1` и self-contained HTML. Остальные production plugins сохраняют опубликованные версии.
 
 | Service plugin | Tier | Status | Version | Primary scope | Execution sources to evaluate |
 |---|---:|---|---|---|---|
@@ -13,7 +13,7 @@
 | Yandex Webmaster | 1 | **available** | 2.1.0 | indexing, diagnostics, queries, sitemaps, recrawl, links, feeds, exports; approval v2; descriptor/batch cardinality; execution receipts | bundled API helpers; optional MCP/app backend |
 | Yandex Wordstat | 1 | **available** | 1.1.2 | demand, frequency, semantics, dynamics, regions, trends; candidate topic maps; 20-association cap; unambiguous seed/topic relation provenance | bundled Wordstat API в составе Yandex Search API v2 helpers; optional MCP/app backend |
 | Yandex Search | 1 | **available** | 1.0.2 | web SERP, batch, rankings, competitors, URL-overlap clustering; 250-result depth | bundled Search API v2 helpers; optional MCP/app backend |
-| Yandex SEO | X | **available** | 1.1.2 | cross-service demand, visibility, performance, gaps, cannibalization, topical architecture, internal-link planning, prioritization; hardened structural/link artifact validation | pure-data orchestration over Wordstat + Search + Webmaster + Metrika |
+| Yandex SEO | X | **available** | 1.2.0 | cross-service demand, visibility, performance, gaps, cannibalization, topical architecture, internal-link planning, Weekly Organic Report, immutable artifacts, prioritization | pure-data orchestration over Wordstat + Search + Webmaster + Metrika |
 | Yandex Marketing | X | **available** | 1.1.0 | paid performance, KPI reconciliation, evidence roles, demand/query intelligence, landing/budget opportunities | pure-data orchestration over Direct + Metrika + Wordstat with optional Search context |
 | Yandex Tracker | 2 | backlog | — | issues, queues, permissions, worklogs, boards | official API first |
 | Yandex 360 | 2 | backlog | — | mail, calendar, disk, organization | official APIs first |
@@ -24,7 +24,7 @@
 
 ## Cross-service workflows
 
-- `yandex-seo`: **available 1.1.2** — Wordstat + Search + Webmaster + Metrika; Topical Architecture и Internal Linking; no own transport, delegated previews only.
+- `yandex-seo`: **available 1.2.0** — Wordstat + Search + Webmaster + Metrika; Topical Architecture, Internal Linking и Weekly Organic Report; no own transport, delegated previews only.
 - `yandex-marketing`: **available 1.1.0** — Direct + Metrika + Wordstat, Search optional; `canonical` / `reconciliation_only` / `enrichment` roles explicit.
 - `yandex-ecommerce`, `yandex-mobile-growth`, `yandex-growth`: backlog ideas only.
 
@@ -54,6 +54,10 @@ Ownership contract:
 - `OBSERVED`, `DERIVED`, `HYPOTHESIS`, `METHODOLOGY` не смешиваются. Methodology из semantic-cocoon/TGA/QBST материалов не становится ranking fact без независимого authoritative evidence.
 
 Поддерживаются `GREENFIELD` и `EXISTING_SITE` режимы. При отсутствии Search evidence архитектура обязана сообщить `SERP_VALIDATION_MISSING`, а page boundaries остаются гипотезами.
+
+## P2 — Weekly Organic Report
+
+`yandex-seo-weekly-report` формирует нормативный `seo-weekly-organic-report/v1`, self-contained HTML и immutable artifact set с `yandex-ai-artifact-manifest/v1`. Workflow принимает structured evidence от owning service plugins/file fallback и не добавляет Yandex transport. Любые delegated actions маркируются `PREVIEW-ONLY`.
 
 ## Repository controls
 
