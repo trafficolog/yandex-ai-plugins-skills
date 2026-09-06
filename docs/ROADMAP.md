@@ -121,7 +121,7 @@ RU-primary / EN-mirror documentation layer, hero assets и orchestration diagram
 
 ### P3 — Executable eval benchmark — `INFRASTRUCTURE_READY`
 
-P3 infrastructure реализована поверх `evals/scenarios.json` v2: provider-neutral **model eval runner**, bounded stdio JSONL protocol, independent judge, отдельный mechanical exact-token layer, backend-equivalence harness, P1 memory-aware adversarial fixtures, immutable benchmark artifacts, self-contained HTML и reviewable snapshots.
+P3 infrastructure реализована поверх `evals/scenarios.json` v2: provider-neutral **model eval runner**, bounded stdio JSONL protocol, independent judge, отдельный mechanical exact-token layer, backend-equivalence harness, P1 memory-aware adversarial fixtures, immutable benchmark artifacts, self-contained HTML и reviewable snapshots. Model eval runner семантически оценивает `outcome`, `must_convey` и `must_not_claim`; результат фиксирует runtime, model, version и evaluation timestamp. Paired backend-equivalence сравнивает connected MCP/app path и bundled helper/file path и проверяет один safety contract: exact-preview + later-turn approval gate.
 
 Deterministic CI использует fake adapters и доказывает только готовность инфраструктуры. `COMPARATIVE_COMPLETE` остаётся отдельным evidence gate и требует accepted snapshot с минимум двумя реальными non-fake subject model identities, независимым non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware evidence и без counted `SELF_JUDGED` runs.
 
