@@ -121,7 +121,7 @@ class BilingualDocumentationTests(unittest.TestCase):
             "yandex-webmaster": "2.1.0",
             "yandex-wordstat": "1.1.2",
             "yandex-search": "1.0.2",
-            "yandex-seo": "1.1.2",
+            "yandex-seo": "1.2.0",
             "yandex-marketing": "1.1.0",
         }
         import json
