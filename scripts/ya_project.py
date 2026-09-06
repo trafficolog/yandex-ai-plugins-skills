@@ -18,6 +18,7 @@ from project_memory.contracts import (
     validate_project,
 )
 from project_memory.decisions import record_execution, validate_decision_chain
+from project_memory.hypotheses import extract_hypothesis_records, validate_hypothesis
 from project_memory.storage import atomic_write_text
 from project_memory.yaml_subset import YamlSubsetError, dumps as yaml_dumps, loads as yaml_loads
 
@@ -66,6 +67,25 @@ def _validate_scaffold(root: Path, *, at: datetime) -> tuple[list[str], list[str
         errors.append(str(exc))
         return errors, warnings
     errors.extend(validate_project(doc, at=at))
+
+    hypotheses_path = memory / "hypotheses.md"
+    try:
+        hypothesis_text = hypotheses_path.read_text(encoding="utf-8")
+        hypotheses = extract_hypothesis_records(hypothesis_text)
+    except (OSError, UnicodeError, ValueError) as exc:
+        errors.append(f"hypotheses.md: {exc}")
+    else:
+        seen_hypothesis_ids: set[str] = set()
+        for index, record in enumerate(hypotheses):
+            record_errors = validate_hypothesis(record, at=at)
+            errors.extend(f"hypotheses[{index}]: {error}" for error in record_errors)
+            hypothesis_id = record.get("hypothesis_id")
+            if isinstance(hypothesis_id, str) and hypothesis_id:
+                if hypothesis_id in seen_hypothesis_ids:
+                    errors.append(f"duplicate hypothesis_id: {hypothesis_id}")
+                else:
+                    seen_hypothesis_ids.add(hypothesis_id)
+
     _, decision_errors = validate_decision_chain(memory / "decisions.jsonl", at=at)
     errors.extend(decision_errors)
     _, baseline_errors, baseline_warnings = scan_baselines(memory, at=at)
