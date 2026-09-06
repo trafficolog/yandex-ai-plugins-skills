@@ -10,6 +10,7 @@ import sys
 import tempfile
 import uuid
 
+from project_memory.baselines import build_baseline, create_baseline, scan_baselines
 from project_memory.contracts import (
     PROJECT_SCHEMA,
     format_rfc3339,
@@ -67,6 +68,9 @@ def _validate_scaffold(root: Path, *, at: datetime) -> tuple[list[str], list[str
     errors.extend(validate_project(doc, at=at))
     _, decision_errors = validate_decision_chain(memory / "decisions.jsonl", at=at)
     errors.extend(decision_errors)
+    _, baseline_errors, baseline_warnings = scan_baselines(memory, at=at)
+    errors.extend(baseline_errors)
+    warnings.extend(baseline_warnings)
     return errors, warnings
 
 
@@ -245,6 +249,43 @@ def _record_execution(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_json_file(path: str, *, label: str) -> object:
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ProjectMemoryError(f"cannot read {label} JSON: {exc}") from exc
+
+
+def _add_baseline(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve()
+    memory = _memory_root(root)
+    if not memory.is_dir():
+        raise ProjectMemoryError(f"project memory is not initialized: {memory}")
+    try:
+        captured = parse_rfc3339(args.captured_at)
+        fresh_until = parse_rfc3339(args.fresh_until)
+    except ValueError as exc:
+        raise ProjectMemoryError(str(exc)) from exc
+    data = _read_json_file(args.input, label="baseline input")
+    record = build_baseline(
+        baseline_id=args.baseline_id,
+        kind=args.kind,
+        captured_at=captured,
+        fresh_until=fresh_until,
+        source=args.source,
+        provenance=args.provenance,
+        data=data,
+        artifact_ref=args.artifact_ref,
+        artifact_sha256=args.artifact_sha256,
+    )
+    try:
+        path = create_baseline(memory, record, at=_now())
+    except (ValueError, FileExistsError) as exc:
+        raise ProjectMemoryError(str(exc)) from exc
+    print(path)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ya-project")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -281,6 +322,19 @@ def build_parser() -> argparse.ArgumentParser:
     record_parser.add_argument("receipt")
     record_parser.add_argument("--root", default=".")
     record_parser.set_defaults(handler=_record_execution)
+
+    baseline_parser = subparsers.add_parser("add-baseline")
+    baseline_parser.add_argument("--root", default=".")
+    baseline_parser.add_argument("--baseline-id")
+    baseline_parser.add_argument("--kind", required=True)
+    baseline_parser.add_argument("--captured-at", required=True)
+    baseline_parser.add_argument("--fresh-until", required=True)
+    baseline_parser.add_argument("--source", required=True)
+    baseline_parser.add_argument("--provenance", choices=("OBSERVED", "DERIVED"), default="OBSERVED")
+    baseline_parser.add_argument("--input", required=True)
+    baseline_parser.add_argument("--artifact-ref")
+    baseline_parser.add_argument("--artifact-sha256")
+    baseline_parser.set_defaults(handler=_add_baseline)
     return parser
 
 
