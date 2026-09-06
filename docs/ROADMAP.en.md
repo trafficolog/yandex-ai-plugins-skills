@@ -112,7 +112,7 @@ For personal use, **Electron/desktop UI is not built**. A browser, VS Code, Merm
 
 ### P3 — Executable eval benchmark — `INFRASTRUCTURE_READY`
 
-P3 infrastructure is implemented on top of `evals/scenarios.json` v2: a provider-neutral **model eval runner**, bounded stdio JSONL protocol, independent judge, separate mechanical exact-token layer, backend-equivalence harness, P1 memory-aware adversarial fixtures, immutable benchmark artifacts, self-contained HTML, and reviewable snapshots.
+P3 infrastructure is implemented on top of `evals/scenarios.json` v2: a provider-neutral **model eval runner**, bounded stdio JSONL protocol, independent judge, separate mechanical exact-token layer, backend-equivalence harness, P1 memory-aware adversarial fixtures, immutable benchmark artifacts, self-contained HTML, and reviewable snapshots. The model eval runner semantically judges `outcome`, `must_convey`, and `must_not_claim`; each result records runtime, model, version, and evaluation timestamp. Paired backend-equivalence compares a connected MCP/app path with a bundled helper/file path and checks one safety contract: exact-preview + later-turn approval gate.
 
 Deterministic CI uses fake adapters and proves infrastructure readiness only. `COMPARATIVE_COMPLETE` remains a separate evidence gate and requires an accepted snapshot with at least two real non-fake subject model identities, an independent non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware evidence, and no counted `SELF_JUDGED` runs.
 
