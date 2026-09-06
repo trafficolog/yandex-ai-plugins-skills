@@ -2,13 +2,13 @@
 
 <p align="center"><a href="README.md">Русский</a> · <strong>English</strong></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.3.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.4.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 A marketplace of independent AI plugins **for Yandex services** — Direct, Metrika, Webmaster, Wordstat, Search, plus cross-service SEO/Marketing orchestration — used from AI agents and coding assistants. This is not a plugin set for YandexGPT: each plugin gives an agent specialized skills, verifiable API/workflow contracts, and a safe path to the owning Yandex service.
 
-The current repository release is `1.3.0`. Plugins version independently; published release/tag records are treated as immutable.
+The current repository release is `1.4.0`. Plugins version independently; published release/tag records are treated as immutable.
 
 ## What this is and who it is for
 
@@ -222,3 +222,15 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 ```
 
 The demo requires no credentials or network access. `report.html` is self-contained; `report.json` remains the source of truth; delegated actions are marked `PREVIEW-ONLY`. The manifest records SHA-256 for managed files and an existing artifact snapshot is never overwritten on collision.
+
+## P3 Executable Eval Benchmark
+
+P3 adds repository-level **provider-neutral** benchmark infrastructure over the existing `evals/scenarios.json` v2 fixtures. The quick offline check validates fixtures without invoking an external model:
+
+```bash
+python scripts/ya_eval.py check --plugins all
+```
+
+`run` invokes external subject/judge adapters through bounded stdio JSONL; `must_mention_tokens` remains mechanical evidence while semantic verdicts come from an independent judge. The backend-equivalence harness compares safety-relevant P0 bindings/gates without a live Yandex write, and memory-aware scenarios validate real P1 fixtures as inert structured data. Results are immutable `yandex-ai-benchmark-result/v1` / `yandex-ai-benchmark-manifest/v1` artifacts and can be materialized as reviewable snapshots without automatic Git commit/push.
+
+The current implementation status is `INFRASTRUCTURE_READY`. `COMPARATIVE_COMPLETE` is a separate evidence gate requiring at least two real non-fake subject model identities, an independent non-fake judge, mechanical and semantic evidence, backend-equivalence `PASS`, memory-aware evidence, and no counted `SELF_JUDGED` runs. No accepted live multi-model benchmark has been run on the current repository head, so green CI and fake adapters are not evidence of `COMPARATIVE_COMPLETE`.

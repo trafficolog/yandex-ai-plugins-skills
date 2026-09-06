@@ -140,3 +140,26 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 Demo and real build use the same `seo-weekly-organic-report/v1` contract and the same `yandex-ai-artifact-manifest/v1`. The result contains normative `report.json`, self-contained `report.html`, a SHA-256 manifest, and optional Mermaid/DOT exports. `PREVIEW-ONLY` recommendations remain read-only/delegated and never authorize a write.
 
 For a real build, first obtain fresh normalized Webmaster/Metrika evidence through the owning service plugins or supported file/export path, then pass the files to `seo_weekly_report.py build`. `yandex-seo` reads no Yandex credentials and opens no transport. Partial/missing coverage remains an explicit limitation; an existing immutable artifact set is never overwritten.
+
+## 11. P3 Executable Eval Benchmark
+
+The P3 CLI remains **provider-neutral**. To validate every committed eval-v2 fixture without invoking subject/judge adapters:
+
+```bash
+python scripts/ya_eval.py check --plugins all
+```
+
+A real `run` requires two locally provisioned JSON argv configs, one for the subject adapter and one for an independent judge adapter. The repository does not download adapter packages/URLs or convert a user-provided URL into executable code. Example interface:
+
+```bash
+python scripts/ya_eval.py run \
+  --subject-adapter ./subject-argv.json \
+  --judge-adapter ./judge-argv.json \
+  --plugins all \
+  --repository-sha <40-lowercase-hex-sha> \
+  --output-root ./artifacts/evals
+```
+
+`run` creates an immutable artifact directory with normative `results.json`, self-contained `comparison.html`, bounded subject/judge evidence, and manifest hashes. `publish-snapshot` only materializes an already hash-verified artifact set under `evals/results/v1/`; it never commits or pushes automatically.
+
+Fake adapters exist for deterministic CI and prove only `INFRASTRUCTURE_READY`. `COMPARATIVE_COMPLETE` requires accepted live evidence: at least two real non-fake subject model identities, an independent non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware scenarios, and no counted `SELF_JUDGED` runs. No accepted live multi-model benchmark has been run on the current head.

@@ -140,3 +140,26 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 Demo и real build используют один contract `seo-weekly-organic-report/v1` и один `yandex-ai-artifact-manifest/v1`. Результат содержит normative `report.json`, self-contained `report.html`, manifest с SHA-256 и optional Mermaid/DOT exports. `PREVIEW-ONLY` recommendations остаются read-only/delegated и не разрешают запись.
 
 Для real build заранее получите свежие normalized Webmaster/Metrika evidence через owning service plugins или supported file/export path, затем передайте файлы в `seo_weekly_report.py build`. `yandex-seo` не читает Yandex credentials и не открывает transport. Partial/missing coverage сохраняется как explicit limitation; existing immutable artifact set не перезаписывается.
+
+## 11. P3 Executable Eval Benchmark
+
+P3 CLI остаётся **provider-neutral**. Для проверки всех committed eval-v2 fixtures без запуска subject/judge adapters:
+
+```bash
+python scripts/ya_eval.py check --plugins all
+```
+
+Реальный `run` требует два локально provisioned JSON argv config — для subject adapter и независимого judge adapter. Repository не скачивает adapter package/URL и не превращает пользовательский URL в executable code. Пример интерфейса:
+
+```bash
+python scripts/ya_eval.py run \
+  --subject-adapter ./subject-argv.json \
+  --judge-adapter ./judge-argv.json \
+  --plugins all \
+  --repository-sha <40-lowercase-hex-sha> \
+  --output-root ./artifacts/evals
+```
+
+`run` создаёт immutable artifact directory с normative `results.json`, self-contained `comparison.html`, bounded subject/judge evidence и manifest hashes. `publish-snapshot` только материализует уже hash-verified artifact set под `evals/results/v1/`; автоматических Git commit/push нет.
+
+Fake adapters предназначены для deterministic CI и подтверждают только `INFRASTRUCTURE_READY`. `COMPARATIVE_COMPLETE` требует accepted live evidence: минимум две реальные non-fake subject model identities, independent non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware scenarios и отсутствие counted `SELF_JUDGED`. Accepted live multi-model benchmark на текущем head не проводился.
