@@ -119,18 +119,13 @@ RU-primary / EN-mirror documentation layer, hero assets и orchestration diagram
 
 Для личного использования **Electron/desktop UI не строится**. Браузер, VS Code, Mermaid/DOT и при необходимости DuckDB/notebook покрывают просмотр данных без второго application lifecycle. UI рассматривается позже только при доказанном multi-project/compliance или human approval-queue use case.
 
-### P3 — Executable eval benchmark
+### P3 — Executable eval benchmark — `INFRASTRUCTURE_READY`
 
-Существующие adversarial fixtures должны стать исполняемым benchmark, а не только structurally valid data. Нужен отдельный model eval runner / judge поверх `evals/scenarios.json` v2. Definition of done:
+P3 infrastructure реализована поверх `evals/scenarios.json` v2: provider-neutral **eval runner**, bounded stdio JSONL protocol, independent judge, отдельный mechanical exact-token layer, backend-equivalence harness, P1 memory-aware adversarial fixtures, immutable benchmark artifacts, self-contained HTML и reviewable snapshots.
 
-1. eval runner реально выполняет fixtures против выбранного runtime/model и семантически оценивает `outcome`, `must_convey` и `must_not_claim`;
-2. deterministic exact-token lint (`must_mention_tokens`) остаётся отдельным mechanical evidence, а не заменяется judge;
-3. результат фиксирует runtime, model, version и evaluation timestamp;
-4. минимум один paired backend-equivalence scenario прогоняет один и тот же consequential request через connected MCP/app path и bundled-helper/file path и подтверждает одинаковый exact-preview + later-turn approval gate;
-5. benchmark публикует результаты нескольких моделей и явно разделяет model/judge semantic evidence и repository validator/CI evidence;
-6. memory-aware scenarios проверяют, что stale/incorrect project memory не превращается в более уверенное, но менее доказательное решение.
+Deterministic CI использует fake adapters и доказывает только готовность инфраструктуры. `COMPARATIVE_COMPLETE` остаётся отдельным evidence gate и требует accepted snapshot с минимум двумя реальными non-fake subject model identities, независимым non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware evidence и без counted `SELF_JUDGED` runs.
 
-До появления такого runner зелёный eval-v2 validator не означает, что модель семантически прошла сценарии.
+Accepted live multi-model benchmark на текущем repository head **не проводился**. Поэтому зелёный eval-v2 validator, repository CI и fake adapters нельзя представлять как доказательство того, что несколько реальных моделей семантически прошли benchmark. Следующий шаг P3 — выполнить реальные externally provisioned adapters и опубликовать сравнимый snapshot через обычный reviewed Git/PR path.
 
 ## Что сознательно не делать сейчас
 
