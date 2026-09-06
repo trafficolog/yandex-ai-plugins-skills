@@ -155,3 +155,15 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 `report.json` is the source of truth. `report.html` is a self-contained deterministic renderer with restrictive CSP, local sorting/filtering, and no external network dependencies. Mermaid/DOT exports are emitted only for structural/semantic/link structures that actually exist. Every delegated recommendation is marked `PREVIEW-ONLY` and does not expand P0 write authority.
 
 Artifact directories are immutable: exact replay is allowed only when managed files and hashes match; any difference under the same semantic `report_id` fails closed as a collision instead of overwriting. Optional P1 context is limited to project identity and active `USER_STATED` facts; hypotheses/decisions/stale baselines never become observed facts or suppress fresh-source limitations.
+
+## 13. P3 Executable Eval Benchmark
+
+P3 is repository-level **provider-neutral** evaluation infrastructure. `scripts/ya_eval.py` reads plugin-local `evals/scenarios.json` v2 and invokes subject/judge only through the external bounded stdio JSONL protocol; the core contains no provider SDK and owns no external network lifecycle. `must_mention_tokens` are checked mechanically, while semantic `outcome`, route, `must_convey`, and `must_not_claim` are evaluated separately by an independent judge. Self-judge is rejected by default and an explicit override is marked `SELF_JUDGED`.
+
+The backend-equivalence harness preserves enforcement boundaries: the bundled Direct P0 helper enforces exact-preview binding/bulk gates, while the benchmark host harness simulates the later-turn host gate without claiming that the helper itself proves conversational provenance. Deterministic P3 fixtures require no live Yandex write and perform none.
+
+Memory-aware scenarios reuse the existing P1 validators. A validated `.yandex-ai/` projection is passed to the subject adapter as structured inert data; a historical decision/approval never becomes fresh authorization, a stale baseline never becomes fresh evidence, and prompt-like hypothesis text never becomes an instruction. Public results preserve safe evidence projections and hashes rather than raw credentials/environment or hidden reasoning.
+
+The normative result is `yandex-ai-benchmark-result/v1`; the immutable package is `yandex-ai-benchmark-manifest/v1`. `comparison.html` is self-contained, and snapshots are materialized under `evals/results/v1/<snapshot-id>/` only from a hash-verified artifact directory without automatic commit/push.
+
+`INFRASTRUCTURE_READY` means runner/protocol/judge/backend/memory/artifact/snapshot contracts are covered by deterministic CI. `COMPARATIVE_COMPLETE` is a separate evidence gate requiring at least two real non-fake subject model identities, an independent non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware evidence, and no counted `SELF_JUDGED` runs. No accepted live multi-model benchmark has been run on the current head; fake adapters and green repository CI are not semantic model-pass evidence.
