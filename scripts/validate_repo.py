@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import sys
 from typing import Any
 
@@ -14,10 +14,13 @@ except ImportError:
     import validate_repo_core as _core
 
 # Preserve the established validator API, including private helpers used by
-# repository regression tests, while layering repository-owned P1 validation.
+# repository regression tests, while layering repository-owned P1/P3 validation.
 for _name in dir(_core):
     if not _name.startswith("__") and _name not in {"validate_repository", "main"}:
         globals()[_name] = getattr(_core, _name)
+
+_CORE_VALIDATE_EVALS = _core._validate_evals
+_MEMORY_FIXTURE_PREFIX = ("evals", "fixtures", "memory")
 
 PROJECT_MEMORY_REQUIRED_PATHS = (
     "scripts/ya_project.py",
@@ -92,6 +95,52 @@ def _validate_project_memory_repository_surface(
     return errors
 
 
+def _validate_eval_memory_fixture_paths(plugin_path: Path, errors: list[str]) -> None:
+    path = plugin_path / "evals/scenarios.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return
+    if not isinstance(data, dict) or not isinstance(data.get("scenarios"), list):
+        return
+
+    repository_root = plugin_path.parents[1].resolve()
+    fixture_root = (repository_root / "evals/fixtures/memory").resolve()
+    for index, scenario in enumerate(data["scenarios"]):
+        if not isinstance(scenario, dict) or "memory_fixture" not in scenario:
+            continue
+        value = scenario.get("memory_fixture")
+        prefix = f"eval scenario #{index} memory_fixture"
+        if not isinstance(value, str) or not value or "\x00" in value or "\\" in value:
+            errors.append(f"{prefix} must be a safe repository-relative POSIX path: {path}")
+            continue
+        if value.startswith("/") or "//" in value:
+            errors.append(f"{prefix} must be a safe repository-relative POSIX path: {path}")
+            continue
+        pure = PurePosixPath(value)
+        parts = pure.parts
+        if len(parts) <= len(_MEMORY_FIXTURE_PREFIX) or tuple(parts[:3]) != _MEMORY_FIXTURE_PREFIX:
+            errors.append(f"{prefix} must stay under evals/fixtures/memory/: {path}")
+            continue
+        if any(part in {"", ".", ".."} for part in parts):
+            errors.append(f"{prefix} cannot contain traversal segments: {path}")
+            continue
+        target = (repository_root / Path(*parts)).resolve()
+        try:
+            target.relative_to(fixture_root)
+        except ValueError:
+            errors.append(f"{prefix} escapes evals/fixtures/memory/: {path}")
+            continue
+        if not target.is_dir():
+            errors.append(f"{prefix} does not exist: {value}: {path}")
+
+
+def _validate_evals(plugin_path: Path, errors: list[str]) -> None:
+    """Preserve eval-v2 validation and add the optional P3 memory fixture boundary."""
+    _CORE_VALIDATE_EVALS(plugin_path, errors)
+    _validate_eval_memory_fixture_paths(plugin_path, errors)
+
+
 def validate_repository(
     root: Path,
     *,
@@ -105,14 +154,21 @@ def validate_repository(
         changed_paths=changed_paths,
         strict_reference_freshness=strict_reference_freshness,
     )
-    matrix_path = root.resolve() / "docs/CONTRACT_MATRIX.json"
+    resolved_root = root.resolve()
+    plugins_root = resolved_root / "plugins"
+    if plugins_root.is_dir():
+        for plugin_path in sorted(path for path in plugins_root.iterdir() if path.is_dir()):
+            if (plugin_path / "evals/scenarios.json").is_file():
+                _validate_eval_memory_fixture_paths(plugin_path, errors)
+
+    matrix_path = resolved_root / "docs/CONTRACT_MATRIX.json"
     try:
         matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return errors
     errors.extend(
         _validate_project_memory_repository_surface(
-            root.resolve(),
+            resolved_root,
             declared_contract_ids=_project_memory_contract_ids(matrix),
         )
     )
