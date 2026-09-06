@@ -116,7 +116,9 @@ Canonical JSON uses UTF-8, sorted keys and compact separators.
 
 `artifact_set_id` is derived from the final canonical `report.json` SHA-256.
 
-`generated_at` and manifest `created_at` are recorded timestamps. Re-rendering the same semantic report at a later time preserves `report_id` but changes byte content unless the same explicit timestamp is supplied. Byte-identical replay is required in deterministic/test mode with an explicit timestamp.
+`generated_at` and manifest `created_at` are recorded timestamps. Re-rendering the same semantic report at a later time preserves `report_id` but changes byte content and therefore changes `artifact_set_id`. Because the output directory is keyed by `report_id`, an already existing artifact set is treated as an immutable snapshot: a later run with the same `report_id` but different expected managed-file hashes fails closed with an output-collision error rather than overwriting history.
+
+Idempotent replay is supported only when the same explicit `generated_at`/creation timestamp is supplied and every existing managed file hash matches the deterministic expected content. Tests and demo deterministic replay use explicit timestamps.
 
 ## 6. Artifact layout
 
@@ -141,7 +143,7 @@ artifacts/
 
 Diagram files are optional and are emitted only when the corresponding structures exist in the normalized report/source artifacts. The workflow must not invent topical architecture, clusters or internal-link plans merely to populate the directory.
 
-Project slug and report paths are validated against traversal, absolute paths, NUL bytes and unsafe empty segments. Existing artifact directories are not silently overwritten. Idempotent re-emission is allowed only when every existing managed file hash matches deterministic expected content; otherwise the operation fails closed.
+Project slug and report paths are validated against traversal, absolute paths, NUL bytes and unsafe empty segments. Existing artifact directories are not silently overwritten. Idempotent re-emission is allowed only under the replay rule in section 5; otherwise the operation fails closed.
 
 ## 7. HTML renderer
 
