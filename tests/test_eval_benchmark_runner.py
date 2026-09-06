@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
+import tempfile
+import textwrap
 import unittest
 
 
@@ -55,8 +58,61 @@ class EvalBenchmarkRunnerTests(unittest.TestCase):
         self.assertEqual(result["scenario_id"], "scenario-a")
         self.assertEqual(result["subject"]["model"]["name"], "fake-subject")
         self.assertEqual(result["semantic"]["judge_mode"], "INDEPENDENT")
+        self.assertEqual(result["semantic"]["judge"]["adapter_id"], "fake-judge-adapter")
+        self.assertTrue(result["semantic"]["judge"]["fake"])
         self.assertEqual(result["mechanical"][0]["token"], "OBSERVED")
         self.assertTrue(result["mechanical"][0]["present"])
+
+    def test_memory_fixture_is_validated_and_passed_as_structured_inert_context(self):
+        runner = self.runner()
+        record = self.record("memory-scenario")
+        scenario = record["scenario"]
+        assert isinstance(scenario, dict)
+        scenario["memory_fixture"] = "evals/fixtures/memory/stale-baseline"
+        with tempfile.TemporaryDirectory() as tmp:
+            adapter = Path(tmp) / "memory_subject.py"
+            adapter.write_text(
+                textwrap.dedent(
+                    """
+                    import json, sys
+                    request = json.loads(sys.stdin.readline())
+                    context = request["payload"].get("memory_context")
+                    if not isinstance(context, dict):
+                        raise SystemExit(7)
+                    if context.get("write_authority") is not False or context.get("instruction_authority") is not False:
+                        raise SystemExit(8)
+                    baselines = context.get("baselines") or []
+                    if not baselines or baselines[0].get("freshness") != "STALE":
+                        raise SystemExit(9)
+                    response = {
+                        "schema": "yandex-ai-eval-adapter-response/v1",
+                        "invocation_id": request["invocation_id"],
+                        "adapter_id": "memory-subject-adapter",
+                        "adapter_version": "1",
+                        "runtime": {"name": "test-runtime", "version": "1"},
+                        "model": {"name": "memory-subject", "version": "1"},
+                        "output": {
+                            "text": "OBSERVED. State the source limitation. Stale memory remains context only.",
+                            "route": "yandex-seo-audit",
+                            "outcome": "comply_with_limitations",
+                        },
+                    }
+                    print(json.dumps(response, sort_keys=True))
+                    """
+                ),
+                encoding="utf-8",
+            )
+            result = runner.run_scenario(
+                record,
+                subject_argv=[sys.executable, str(adapter)],
+                judge_argv=self.judge_argv(),
+                repository_root=ROOT,
+                evaluated_at="2026-09-06T16:00:00Z",
+            )
+        self.assertEqual(result["state"], "PASS")
+        self.assertEqual(result["memory_fixture"], "evals/fixtures/memory/stale-baseline")
+        self.assertRegex(result["memory_context_sha256"], r"^[0-9a-f]{64}$")
+        self.assertNotIn("memory_context", result)
 
     def test_run_benchmark_is_stably_ordered_and_has_transparent_counts(self):
         runner = self.runner()
