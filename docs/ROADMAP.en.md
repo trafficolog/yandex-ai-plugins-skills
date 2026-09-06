@@ -110,18 +110,13 @@ Orchestration results should be portable artifacts:
 
 For personal use, **Electron/desktop UI is not built**. A browser, VS Code, Mermaid/DOT, and when needed DuckDB/notebooks cover inspection without introducing a second application lifecycle. UI is reconsidered only after a demonstrated multi-project/compliance or human approval-queue use case.
 
-### P3 — Executable eval benchmark
+### P3 — Executable eval benchmark — `INFRASTRUCTURE_READY`
 
-Existing adversarial fixtures should become an executable benchmark rather than only structurally valid data. A dedicated model eval runner / judge is required on top of `evals/scenarios.json` v2. Definition of done:
+P3 infrastructure is implemented on top of `evals/scenarios.json` v2: a provider-neutral **eval runner**, bounded stdio JSONL protocol, independent judge, separate mechanical exact-token layer, backend-equivalence harness, P1 memory-aware adversarial fixtures, immutable benchmark artifacts, self-contained HTML, and reviewable snapshots.
 
-1. the eval runner actually executes fixtures against a selected runtime/model and semantically judges `outcome`, `must_convey`, and `must_not_claim`;
-2. deterministic exact-token lint (`must_mention_tokens`) remains separate mechanical evidence rather than being replaced by the judge;
-3. each result records runtime, model, version, and evaluation timestamp;
-4. at least one paired backend-equivalence scenario sends the same consequential request through a connected MCP/app path and a bundled-helper/file path and confirms the same exact-preview + later-turn approval gate;
-5. the benchmark publishes results for multiple models and explicitly separates model/judge semantic evidence from repository validator/CI evidence;
-6. memory-aware scenarios verify that stale or incorrect project memory does not produce a more confident but less evidence-grounded answer.
+Deterministic CI uses fake adapters and proves infrastructure readiness only. `COMPARATIVE_COMPLETE` remains a separate evidence gate and requires an accepted snapshot with at least two real non-fake subject model identities, an independent non-fake judge, mechanical + semantic evidence, backend-equivalence `PASS`, memory-aware evidence, and no counted `SELF_JUDGED` runs.
 
-Until that runner exists, a green eval-v2 validator does not mean that a model semantically passed the scenarios.
+An accepted live multi-model benchmark has **not been run** on the current repository head. Therefore a green eval-v2 validator, repository CI, and fake adapters must not be presented as evidence that multiple real models semantically passed the benchmark. The next P3 step is to run externally provisioned real adapters and publish a comparable snapshot through the normal reviewed Git/PR path.
 
 ## What not to do now
 
