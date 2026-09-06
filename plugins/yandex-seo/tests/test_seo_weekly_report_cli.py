@@ -1,13 +1,15 @@
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 import json
 from pathlib import Path
-import subprocess
-import sys
+from types import SimpleNamespace
 import tempfile
 import unittest
 
+from scripts.seo_weekly_report import main as weekly_report_main
+
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "seo_weekly_report.py"
 
 
 def service_inputs():
@@ -35,14 +37,12 @@ def service_inputs():
 
 
 class WeeklyReportCliTests(unittest.TestCase):
-    def run_cli(self, *args, cwd=None):
-        return subprocess.run(
-            [sys.executable, str(SCRIPT), *map(str, args)],
-            cwd=cwd or ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+    def run_cli(self, *args):
+        stdout = StringIO()
+        stderr = StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            returncode = weekly_report_main([str(arg) for arg in args])
+        return SimpleNamespace(returncode=returncode, stdout=stdout.getvalue(), stderr=stderr.getvalue())
 
     def test_demo_generates_complete_artifact_set_without_credentials(self):
         with tempfile.TemporaryDirectory() as tmp:
