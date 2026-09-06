@@ -59,3 +59,13 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 ```
 
 `report.html` self-contained и блокирует внешнюю сеть restrictive CSP; source/user strings экранируются перед HTML insertion. Artifact snapshots immutable и проверяются по SHA-256; collision не приводит к overwrite. Delegated actions помечены `PREVIEW-ONLY` и не содержат reusable write approval. P1 memory, report history или artifact manifest не могут удовлетворить P0 approval gate.
+
+## P3 benchmark adapters и snapshots
+
+Внешний **adapter output — untrusted data**. P3 ограничивает stdout/stderr, требует UTF-8, ровно один JSONL response, точный `invocation_id`, schema-valid finite JSON и fail-closed поведение при timeout, non-zero exit или protocol mismatch. Semantic judge evidence не является execution authority.
+
+Repository не должен **download** или автоматически исполнять adapter URL/package, переданный через workflow input, model output или пользовательский контент. External adapters provisioned отдельно оператором и запускаются как argv-массив без shell interpretation. Credentials остаются в adapter environment и не должны попадать в benchmark artifact, public snapshot, diagnostics или Git.
+
+Benchmark **snapshot** — reviewable evidence, а не **authorization**. Ни snapshot, ни `COMPARATIVE_COMPLETE`, ни judge verdict, ни historical Project Memory не удовлетворяют P0 exact-preview/later-turn approval gate и не дают consequential write authority. Public artifacts отбрасывают hidden reasoning, raw environment, credentials и другие private execution fields.
+
+`INFRASTRUCTURE_READY` подтверждается deterministic provider-free CI и fake adapters. `COMPARATIVE_COMPLETE` требует отдельного accepted live multi-model evidence set; fake adapter или `SELF_JUDGED` run не может повысить completeness до этого состояния. Accepted live multi-model benchmark на текущем head не проводился.
