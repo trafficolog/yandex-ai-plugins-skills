@@ -122,7 +122,7 @@ def validate_judge_response(
         route_state = "FAIL"
 
     normalized: dict[str, object] = {
-        "judge_identity": model_identity(judge_response),
+        "judge_identity": list(model_identity(judge_response)),
         "route": {
             "expected": expected_route,
             "actual": actual_route,
@@ -202,7 +202,7 @@ def evaluate_semantics(
         raise ValueError("semantic judge must use an independent model identity")
 
     normalized = validate_judge_response(text, expectations, judge_response)
-    normalized["subject_identity"] = subject_identity
+    normalized["subject_identity"] = list(subject_identity)
     normalized["judge_mode"] = "SELF_JUDGED" if self_judged else "INDEPENDENT"
     return normalized
 
