@@ -73,10 +73,11 @@ def run_scenario(
         "scenario_id": scenario_id,
         "scenario": scenario,
     }
-    if evaluated_at is not None or repository_sha is not None:
-        if evaluated_at is None or repository_sha is None:
-            raise ValueError("benchmark metadata requires evaluated_at and repository_sha together")
+    if evaluated_at is not None:
         _validate_timestamp(evaluated_at)
+    if repository_sha is not None:
+        if evaluated_at is None:
+            raise ValueError("repository_sha benchmark metadata requires evaluated_at")
         if _SHA40.fullmatch(repository_sha) is None:
             raise ValueError("repository SHA must be exactly 40 lowercase hex characters")
         payload["benchmark"] = {
