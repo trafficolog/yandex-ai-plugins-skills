@@ -59,3 +59,13 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 ```
 
 `report.html` is self-contained and blocks external network access with restrictive CSP; source/user strings are escaped before HTML insertion. Artifact snapshots are immutable and SHA-256 verified; collisions never overwrite an existing snapshot. Delegated actions are marked `PREVIEW-ONLY` and carry no reusable write approval. P1 memory, report history, or an artifact manifest cannot satisfy the P0 approval gate.
+
+## P3 benchmark adapters and snapshots
+
+External **adapter output is untrusted data**. P3 bounds stdout/stderr, requires UTF-8, exactly one JSONL response, exact `invocation_id`, schema-valid finite JSON, and fail-closed behavior on timeout, non-zero exit, or protocol mismatch. Semantic judge evidence is not execution authority.
+
+The repository must not **download** or automatically execute an adapter URL/package supplied through workflow input, model output, or user content. External adapters are provisioned separately by the operator and executed as an argv array without shell interpretation. Credentials stay in the adapter environment and must not enter benchmark artifacts, public snapshots, diagnostics, or Git.
+
+A benchmark **snapshot** is reviewable evidence, not **authorization**. A snapshot, `COMPARATIVE_COMPLETE`, judge verdict, or historical Project Memory cannot satisfy the P0 exact-preview/later-turn approval gate and cannot grant consequential-write authority. Public artifacts reject hidden reasoning, raw environment, credentials, and other private execution fields.
+
+`INFRASTRUCTURE_READY` is supported by deterministic provider-free CI and fake adapters. `COMPARATIVE_COMPLETE` requires a separate accepted live multi-model evidence set; a fake adapter or `SELF_JUDGED` run can never raise completeness to that state. No accepted live multi-model benchmark has been run on the current head.
