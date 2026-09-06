@@ -170,6 +170,7 @@ def main(argv: list[str] | None = None) -> int:
             evaluated_at=evaluated_at,
             repository_sha=repository_sha,
             allow_self_judge=args.allow_self_judge,
+            repository_root=ROOT,
         )
         result = build_result_document(run_result)
         destination = publish_benchmark_artifacts(args.output_root, result)
