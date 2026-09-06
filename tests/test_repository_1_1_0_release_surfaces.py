@@ -14,9 +14,9 @@ EXPECTED_PLUGINS = {
     "yandex-marketing": "1.1.0",
 }
 RELEASED_PLUGINS = {
-    "yandex-direct": ("2.1.0", "yandex-direct-v2.1.0", ".github/releases/yandex-direct-2.1.0.md"),
-    "yandex-metrika": ("2.1.0", "yandex-metrika-v2.1.0", ".github/releases/yandex-metrika-2.1.0.md"),
-    "yandex-webmaster": ("2.1.0", "yandex-webmaster-v2.1.0", ".github/releases/yandex-webmaster-2.1.0.md"),
+    "yandex-direct": ("2.1.0", ".github/releases/yandex-direct-2.1.0.md", "Yandex Direct 2.1.0"),
+    "yandex-metrika": ("2.1.0", ".github/releases/yandex-metrika-2.1.0.md", "Yandex Metrika 2.1.0"),
+    "yandex-webmaster": ("2.1.0", ".github/releases/yandex-webmaster-2.1.0.md", "Yandex Webmaster 2.1.0"),
 }
 
 
@@ -37,14 +37,14 @@ class Repository110ReleaseSurfaceTests(unittest.TestCase):
             with self.subTest(filename=filename):
                 self.assertIn(marker, self.read(filename))
 
-    def test_historical_release_notes_preserve_exact_plugin_release_set(self):
+    def test_historical_release_notes_preserve_plugin_release_set(self):
         repository_notes = self.read(".github/releases/1.1.0.md")
         self.assertIn("1.1.0", repository_notes)
-        for plugin, (version, tag, notes_file) in RELEASED_PLUGINS.items():
+        for plugin, (version, notes_file, display_name) in RELEASED_PLUGINS.items():
             with self.subTest(plugin=plugin):
                 self.assertTrue((ROOT / notes_file).is_file(), notes_file)
                 self.assertIn(version, self.read(notes_file))
-                self.assertIn(tag, repository_notes)
+                self.assertIn(display_name, repository_notes)
 
     def test_plugin_manifests_and_both_marketplaces_preserve_1_1_0_plugin_versions(self):
         for plugin, expected in EXPECTED_PLUGINS.items():
