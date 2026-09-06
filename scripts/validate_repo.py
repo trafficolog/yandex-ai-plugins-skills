@@ -40,8 +40,35 @@ PROJECT_MEMORY_CONTRACT_IDS = {
 }
 _PROJECT_MEMORY_INTERNAL_IMPORTS = {"project_memory", "scripts"}
 
+P3_EVAL_REQUIRED_PATHS = (
+    "scripts/ya_eval.py",
+    "scripts/eval_benchmark/__init__.py",
+    "scripts/eval_benchmark/protocol.py",
+    "scripts/eval_benchmark/scenarios.py",
+    "scripts/eval_benchmark/runner.py",
+    "scripts/eval_benchmark/judge.py",
+    "scripts/eval_benchmark/mechanical.py",
+    "scripts/eval_benchmark/backend_trace.py",
+    "scripts/eval_benchmark/memory.py",
+    "scripts/eval_benchmark/artifacts.py",
+    "scripts/eval_benchmark/snapshots.py",
+    "evals/adapters/fake_subject.py",
+    "evals/adapters/fake_judge.py",
+    "evals/adapters/fake_connected_backend.py",
+    "evals/fixtures/backend-equivalence/direct-consequential.json",
+)
+P3_EVAL_CONTRACT_IDS = {
+    "repository.eval-adapter-protocol",
+    "repository.eval-independent-judge",
+    "repository.eval-backend-equivalence",
+    "repository.eval-memory-adversarial",
+    "repository.eval-immutable-artifacts",
+    "repository.eval-completeness-classification",
+}
+_P3_INTERNAL_IMPORTS = {"scripts", "eval_benchmark", "yd_api"}
 
-def _project_memory_contract_ids(matrix: Any) -> set[str]:
+
+def _repository_contract_ids(matrix: Any) -> set[str]:
     if not isinstance(matrix, dict):
         return set()
     contracts = matrix.get("contracts")
@@ -52,6 +79,40 @@ def _project_memory_contract_ids(matrix: Any) -> set[str]:
         for row in contracts
         if isinstance(row, dict) and isinstance(row.get("id"), str)
     }
+
+
+# Backward-compatible private alias used by existing P1 tests.
+def _project_memory_contract_ids(matrix: Any) -> set[str]:
+    return _repository_contract_ids(matrix)
+
+
+def _validate_python_stdlib_surface(
+    root: Path,
+    relative: str,
+    *,
+    internal_imports: set[str],
+    label: str,
+) -> list[str]:
+    path = root / relative
+    if not path.is_file() or path.suffix != ".py":
+        return []
+    try:
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source, filename=str(path))
+    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
+        return [f"{label} Python source is invalid: {relative}: {exc}"]
+
+    errors: list[str] = []
+    for node in ast.walk(tree):
+        modules: list[str] = []
+        if isinstance(node, ast.Import):
+            modules.extend(alias.name.split(".", 1)[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            modules.append(node.module.split(".", 1)[0])
+        for module in modules:
+            if module not in sys.stdlib_module_names and module not in internal_imports:
+                errors.append(f"{label} requires third-party import {module!r}: {relative}")
+    return errors
 
 
 def _validate_project_memory_repository_surface(
@@ -73,25 +134,44 @@ def _validate_project_memory_repository_surface(
         if not path.is_file():
             errors.append(f"project memory runtime path missing: {relative}")
             continue
-        if path.suffix != ".py":
+        errors.extend(
+            _validate_python_stdlib_surface(
+                root,
+                relative,
+                internal_imports=_PROJECT_MEMORY_INTERNAL_IMPORTS,
+                label="project memory runtime",
+            )
+        )
+    return errors
+
+
+def _validate_p3_eval_repository_surface(
+    root: Path,
+    *,
+    declared_contract_ids: set[str],
+) -> list[str]:
+    """Validate P3 only when the repository declares its adapter protocol row."""
+    if "repository.eval-adapter-protocol" not in declared_contract_ids:
+        return []
+
+    errors: list[str] = []
+    missing_contracts = P3_EVAL_CONTRACT_IDS - declared_contract_ids
+    for contract_id in sorted(missing_contracts):
+        errors.append(f"P3 eval benchmark contract row missing: {contract_id}")
+
+    for relative in P3_EVAL_REQUIRED_PATHS:
+        path = root / relative
+        if not path.is_file():
+            errors.append(f"P3 eval benchmark runtime path missing: {relative}")
             continue
-        try:
-            source = path.read_text(encoding="utf-8")
-            tree = ast.parse(source, filename=str(path))
-        except (OSError, UnicodeDecodeError, SyntaxError) as exc:
-            errors.append(f"project memory Python source is invalid: {relative}: {exc}")
-            continue
-        for node in ast.walk(tree):
-            modules: list[str] = []
-            if isinstance(node, ast.Import):
-                modules.extend(alias.name.split(".", 1)[0] for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
-                modules.append(node.module.split(".", 1)[0])
-            for module in modules:
-                if module not in sys.stdlib_module_names and module not in _PROJECT_MEMORY_INTERNAL_IMPORTS:
-                    errors.append(
-                        f"project memory runtime requires third-party import {module!r}: {relative}"
-                    )
+        errors.extend(
+            _validate_python_stdlib_surface(
+                root,
+                relative,
+                internal_imports=_P3_INTERNAL_IMPORTS,
+                label="P3 eval benchmark runtime",
+            )
+        )
     return errors
 
 
@@ -166,10 +246,17 @@ def validate_repository(
         matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return errors
+    declared_contract_ids = _repository_contract_ids(matrix)
     errors.extend(
         _validate_project_memory_repository_surface(
             resolved_root,
-            declared_contract_ids=_project_memory_contract_ids(matrix),
+            declared_contract_ids=declared_contract_ids,
+        )
+    )
+    errors.extend(
+        _validate_p3_eval_repository_surface(
+            resolved_root,
+            declared_contract_ids=declared_contract_ids,
         )
     )
     return errors
