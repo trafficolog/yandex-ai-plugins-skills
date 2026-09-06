@@ -7,7 +7,7 @@
     {"name":"yandex-webmaster","source":"./plugins/yandex-webmaster","description":"Yandex Webmaster SEO, indexing, query, recrawl, sitemap, feed and export workflow skills.","version":"2.1.0"},
     {"name":"yandex-wordstat","source":"./plugins/yandex-wordstat","description":"Yandex Wordstat demand, semantics, candidate topic-map, dynamics, regions and trend workflow skills.","version":"1.1.2"},
     {"name":"yandex-search","source":"./plugins/yandex-search","description":"Yandex Search web SERP, batch, ranking, competitor and URL-overlap clustering workflow skills.","version":"1.0.2"},
-    {"name":"yandex-seo","source":"./plugins/yandex-seo","description":"Cross-service Yandex SEO evidence, topical architecture, internal linking, opportunity, quality and prioritization workflow skills.","version":"1.1.2"},
+    {"name":"yandex-seo","source":"./plugins/yandex-seo","description":"Cross-service Yandex SEO evidence, topical architecture, internal linking, weekly organic reporting, opportunity, quality and prioritization workflow skills.","version":"1.2.0"},
     {"name":"yandex-marketing","source":"./plugins/yandex-marketing","description":"Cross-service Yandex paid-acquisition reconciliation, demand, query, landing, budget and prioritization workflow skills.","version":"1.1.0"}
   ]
 }
