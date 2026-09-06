@@ -45,6 +45,21 @@ def _require_text(value: object, where: str, *, allow_empty: bool = False) -> st
     return value
 
 
+def _identity_projection(response: dict[str, object]) -> dict[str, object]:
+    runtime = response.get("runtime")
+    model = response.get("model")
+    if not isinstance(runtime, dict) or not isinstance(model, dict):
+        raise ValueError("judge response identity metadata is incomplete")
+    adapter_id = str(response.get("adapter_id", ""))
+    return {
+        "adapter_id": adapter_id,
+        "adapter_version": str(response.get("adapter_version", "")),
+        "runtime": {"name": runtime.get("name"), "version": runtime.get("version")},
+        "model": {"name": model.get("name"), "version": model.get("version")},
+        "fake": adapter_id.startswith("fake-"),
+    }
+
+
 def _normalize_item(
     item: object,
     *,
@@ -67,13 +82,9 @@ def _normalize_item(
     if not evidence_valid:
         state = "UNDETERMINED"
     elif forbidden:
-        # PASS means the forbidden claim is absent and needs no affirmative excerpt.
-        # FAIL asserts presence and therefore requires literal evidence.
         if state == "FAIL" and not evidence:
             state = "UNDETERMINED"
     else:
-        # A positive/negative semantic claim about conveyed content must be
-        # grounded by a literal excerpt; otherwise the judge is unsupported.
         if state in {"PASS", "FAIL"} and not evidence:
             state = "UNDETERMINED"
 
@@ -123,6 +134,7 @@ def validate_judge_response(
 
     normalized: dict[str, object] = {
         "judge_identity": list(model_identity(judge_response)),
+        "judge": _identity_projection(judge_response),
         "route": {
             "expected": expected_route,
             "actual": actual_route,
