@@ -10,7 +10,7 @@ A marketplace of independent AI plugins **for Yandex services**: Direct, Metrika
 
 The plugins give AI agents specialized skills, access to the relevant service data, and shared rules for safe operation. This is not a plugin set for YandexGPT: each plugin owns a specific domain and operates inside explicit access boundaries.
 
-The current published repository version is `1.4.0`. Plugin versions evolve independently.
+The current published repository version is `1.4.0`. Plugin versions evolve independently. Historical published releases and tags remain immutable and are not retargeted to newer commits.
 
 ## What this is and who it is for
 
@@ -86,13 +86,13 @@ cd plugins/yandex-seo
 python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-at 2026-09-06T12:30:00Z
 ```
 
-The output package includes machine-readable `report.json`, self-contained `report.html`, and a SHA-256 manifest. Existing snapshots are not overwritten on conflict, and proposed actions remain `PREVIEW-ONLY`.
+The output package includes machine-readable `report.json`, self-contained `report.html`, and a SHA-256 manifest. Existing snapshots are not overwritten on conflict, and proposed actions remain `PREVIEW-ONLY`. The artifact schemas are `seo-weekly-organic-report/v1` and `yandex-ai-artifact-manifest/v1`.
 
 See [`plugins/yandex-seo/README.en.md`](plugins/yandex-seo/README.en.md).
 
 ### Model quality evaluation
 
-The repository includes executable infrastructure for checking how different AI models perform on the same plugin scenarios.
+P3 added executable infrastructure for checking how different AI models perform on the same plugin scenarios. It is provider-neutral: a concrete model is connected through an adapter while evaluation rules remain shared.
 
 A quick local scenario check does not invoke external models:
 
@@ -175,7 +175,7 @@ flowchart LR
   SEO --> P[proposed actions]
 ```
 
-Wordstat provides demand data, Search provides SERP evidence, and Webmaster/Metrika provide existing-site context. SEO combines them without owning its own Yandex API transport.
+Wordstat provides demand data, Search validates the SERP, and Webmaster/Metrika provide existing-site context. SEO combines them without owning its own Yandex API transport. The two sequential contract layers are named `Topical Architecture` and `Internal Linking`.
 
 See [`docs/ARCHITECTURE.en.md`](docs/ARCHITECTURE.en.md) and [`plugins/yandex-seo/README.en.md`](plugins/yandex-seo/README.en.md).
 
@@ -258,6 +258,8 @@ python scripts/check_reference_freshness.py
 - [`docs/RELEASE_POLICY.en.md`](docs/RELEASE_POLICY.en.md) — versioning and publication rules;
 - [`docs/REVIEW_FIRST_RELEASE.en.md`](docs/REVIEW_FIRST_RELEASE.en.md) — independent review process;
 - [`docs/reviews/README.en.md`](docs/reviews/README.en.md) — dated review artifact archive;
+- [`docs/reviews/2026-09-05-fable-round2-closure.en.md`](docs/reviews/2026-09-05-fable-round2-closure.en.md) — FABLE round-two closure record;
+- [`docs/reviews/2026-09-05-opus-codex-governance.en.md`](docs/reviews/2026-09-05-opus-codex-governance.en.md) — latest dated governance and contract review;
 - [`SECURITY.en.md`](SECURITY.en.md) — security-sensitive reporting guidance;
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution entry point;
 - [`CODE_OF_CONDUCT.en.md`](CODE_OF_CONDUCT.en.md) — community interaction rules;
