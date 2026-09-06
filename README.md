@@ -185,7 +185,7 @@ Strict reference freshness проверяется отдельно через `p
 - [`docs/REVIEW_FIRST_RELEASE.md`](docs/REVIEW_FIRST_RELEASE.md) — independent review guide;
 - [`docs/reviews/README.md`](docs/reviews/README.md) — индекс датированных independent review-артефактов;
 - [`docs/reviews/2026-09-05-fable-round2-closure.md`](docs/reviews/2026-09-05-fable-round2-closure.md) — последний датированный Fable Round 2 remediation artifact;
-- [`docs/reviews/2026-09-05-opus-codex-governance.en.md`](docs/reviews/2026-09-05-opus-codex-governance.en.md) — предыдущий governance review artifact;
+- [`docs/reviews/2026-09-05-opus-codex-governance.md`](docs/reviews/2026-09-05-opus-codex-governance.md) — предыдущий governance review artifact;
 - [`SECURITY.md`](SECURITY.md) — правила сообщения о security-sensitive проблемах;
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contributor entrypoint;
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — правила взаимодействия в repository community;
