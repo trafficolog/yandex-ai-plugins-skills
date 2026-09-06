@@ -4,6 +4,29 @@
 
 All notable repository-level changes are documented here. Plugins use independent SemVer and keep their own changelogs.
 
+## [1.3.0] — 2026-09-06
+
+P2 Weekly Organic Report is the first depth-first read-only end-to-end workflow after P0 safety and P1 Project Memory. The repository release includes Yandex SEO `1.2.0`; all other plugin SemVer values remain unchanged.
+
+### Changed
+
+- Added `yandex-seo-weekly-report` with normative `seo-weekly-organic-report/v1`: exact current/comparison periods, explicit Webmaster/Metrika coverage, source quality/limitations, provenance, findings, and delegated recommendations.
+- Added `yandex-ai-artifact-manifest/v1` with managed relative paths, media roles, SHA-256, and immutable snapshot semantics. Exact deterministic replay is allowed only when bytes/hashes match; a collision never overwrites an existing artifact set.
+- `report.html` is self-contained with restrictive CSP, escaped source/user text, and no CDN, remote fonts, analytics, or network fetch; `report.json` remains the machine source of truth.
+- Deterministic Mermaid/DOT exports are emitted only for structural/semantic/cluster/link structures that actually exist.
+- Added transport-free `demo` and `build` CLI modes plus a sanitized offline fixture. `yandex-seo` receives no local Yandex credentials or HTTP transport.
+- Optional P1 context is limited to project identity plus active `USER_STATED` facts; decisions, hypotheses, and stale baselines do not become fresh observed evidence and do not suppress source limitations.
+- Every delegated action remains `PREVIEW-ONLY`; P2 does not expand P0 exact-preview/later-turn approval/bulk gates.
+- `CONTRACT_MATRIX.json`, eval routing, RU/EN Architecture / Getting Started / Security / README / Service Matrix, and regression contracts are synchronized with P2.
+
+### Plugin release
+
+Yandex SEO `1.2.0`, canonical tag `yandex-seo-v1.2.0`.
+
+### Other plugin versions unchanged
+
+Direct `2.1.0`, Metrika `2.1.0`, Webmaster `2.1.0`, Wordstat `1.1.2`, Search `1.0.2`, Marketing `1.1.0`.
+
 ## [1.2.0] — 2026-09-06
 
 P1 Project Memory is a repository-only release that ships project-owned domain memory for durable context across separate runs without becoming AI-runtime memory or expanding write authority.
