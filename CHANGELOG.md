@@ -4,6 +4,26 @@
 
 Все значимые изменения уровня репозитория фиксируются здесь. Плагины используют независимый SemVer и имеют собственные changelog-файлы.
 
+## [1.2.0] — 2026-09-06
+
+P1 Project Memory — repository-only release с project-owned domain memory, которая сохраняет контекст между отдельными запусками, но не становится памятью AI runtime и не расширяет write authority.
+
+### Изменено
+
+- Добавлен zero-third-party-dependency CLI `scripts/ya_project.py` и канонический `.yandex-ai/` scaffold: `project.yaml`, `decisions.jsonl`, `baselines/`, `hypotheses.md`.
+- `yandex-ai-project/v1` хранит project identity и `USER_STATED` facts; supersession сохраняет историю и не допускает две active values одного logical key.
+- `record-execution` проецирует P0 `yandex-ai-execution/v1` в chained `yandex-ai-decision/v1`: raw `result` не сохраняется, а `receipt_sha256` считается по полному исходному receipt.
+- `add-baseline` создаёт immutable `yandex-ai-baseline/v1` snapshots; exact `fresh_until` остаётся `FRESH`, после границы snapshot становится `STALE` warning без автоматической mutation.
+- `yandex-ai-hypothesis/v1` управляет только explicit fenced JSON records с provenance `HYPOTHESIS` / `DERIVED`; unmanaged Markdown и prompt-like строки остаются инертными данными.
+- Restricted YAML parser, atomic project writes, decision hash-chain, duplicate guards, future timestamp guards и secret-like key heuristic реализованы без сторонних Python packages.
+- Repository validator и `CONTRACT_MATRIX.json` получили четыре P1 infrastructure contracts; ARCHITECTURE, GETTING_STARTED и SECURITY синхронизированы в RU/EN.
+- Project Memory не является разрешением на запись: новый consequential write всё равно требует новый exact `preview_id`, later-turn human approval и отдельный `--ack-bulk` для bulk/unknown scale. Secret heuristic не заявляется как полная DLP.
+- Release intent repository-only: `.github/releases/release.json` содержит `plugins: []`; plugin releases/tags не создаются и не retarget.
+
+### Версии плагинов не изменены
+
+Direct `2.1.0`, Metrika `2.1.0`, Webmaster `2.1.0`, Wordstat `1.1.2`, Search `1.0.2`, SEO `1.1.2`, Marketing `1.1.0`.
+
 ## [1.1.0] — 2026-09-05
 
 P0 executable write-safety release: repository contract и три write-capable service plugins переходят на единый approval/scale/receipt baseline без заявления неподтверждённого read-back или rollback.
