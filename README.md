@@ -2,13 +2,13 @@
 
 <p align="center"><strong>Русский</strong> · <a href="README.en.md">English</a></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.1.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.2.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 Маркетплейс независимых AI-плагинов **для сервисов Яндекса** — Direct, Metrika, Webmaster, Wordstat, Search и кросс-сервисной SEO/Marketing оркестрации — из AI-агентов и coding assistants. Это не набор плагинов для YandexGPT: каждый plugin даёт агенту специализированные skills, проверяемые API/workflow contracts и безопасный путь к данным конкретного сервиса.
 
-Текущий repository release — `1.1.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
+Текущий repository release — `1.2.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
 
 ## Что это и кому подходит
 
@@ -87,6 +87,17 @@ Consequential write требует approval **точного** preview в пос
 В Direct/Metrika/Webmaster `2.1.0` exact preview использует `yandex-ai-approval/v2` и связывает target/principal/request/cardinality. Bulk `>20` или `UNKNOWN` scale требуют отдельный `--ack-bulk` до transport. Успешная запись возвращает `yandex-ai-execution/v1`, но `RESPONSE_ONLY` / `UNVERIFIED` не является read-back verification, а `NOT_AVAILABLE` не обещает rollback. Standalone CLI не может доказать человеческое later-turn approval — это граница host/operator policy.
 
 Нормативные детали: [`docs/PLUGIN_STANDARD.md`](docs/PLUGIN_STANDARD.md) и plugin-local safety references.
+
+## Project Memory
+
+Repository `1.2.0` добавляет project-owned `.yandex-ai/` memory для устойчивого контекста между отдельными запусками: `project.yaml` хранит `USER_STATED` facts, `decisions.jsonl` — hash-chained безопасные projections execution receipts, `baselines/` — immutable freshness-aware snapshots, `hypotheses.md` — явно маркированные `HYPOTHESIS` / `DERIVED` records.
+
+```bash
+python scripts/ya_project.py init --root . --project-id my-project --name "My project"
+python scripts/ya_project.py check --root .
+```
+
+Память — данные, а не инструкции и не разрешение на write. Прошлый decision/receipt не заменяет новый exact `preview_id`, later-turn approval и `--ack-bulk` для bulk/unknown scale. Подробности: [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`SECURITY.md`](SECURITY.md).
 
 ## Оркестрация SEO и Marketing
 
