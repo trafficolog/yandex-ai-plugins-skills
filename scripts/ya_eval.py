@@ -10,6 +10,11 @@ import re
 import sys
 
 try:
+    from .eval_benchmark.artifacts import (
+        build_result_document,
+        publish_benchmark_artifacts,
+        render_comparison_html,
+    )
     from .eval_benchmark.backend_trace import (
         compare_backend_traces,
         load_fixture,
@@ -18,7 +23,13 @@ try:
     from .eval_benchmark.protocol import REQUEST_SCHEMA, canonical_json_bytes, invoke_adapter
     from .eval_benchmark.runner import run_benchmark
     from .eval_benchmark.scenarios import load_scenarios
+    from .eval_benchmark.snapshots import materialize_snapshot
 except ImportError:
+    from eval_benchmark.artifacts import (
+        build_result_document,
+        publish_benchmark_artifacts,
+        render_comparison_html,
+    )
     from eval_benchmark.backend_trace import (
         compare_backend_traces,
         load_fixture,
@@ -27,6 +38,7 @@ except ImportError:
     from eval_benchmark.protocol import REQUEST_SCHEMA, canonical_json_bytes, invoke_adapter
     from eval_benchmark.runner import run_benchmark
     from eval_benchmark.scenarios import load_scenarios
+    from eval_benchmark.snapshots import materialize_snapshot
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,6 +67,16 @@ def _plugins(value: str | None) -> list[str] | None:
 def _emit_error(message: str) -> int:
     sys.stderr.write(f"ERROR: {message}\n")
     return 2
+
+
+def _read_json_object(path: Path, label: str) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid {label} JSON: {path}") from exc
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be a JSON object")
+    return value
 
 
 def _backend_equivalence(connected_config: Path, fixture_path: Path) -> dict[str, object]:
@@ -93,9 +115,17 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--output-root", type=Path, default=Path("artifacts/evals"))
     run.add_argument("--allow-self-judge", action="store_true")
 
+    compare = sub.add_parser("compare", help="Render self-contained HTML from a normative benchmark result")
+    compare.add_argument("--results", type=Path, required=True)
+    compare.add_argument("--output", type=Path)
+
     backend = sub.add_parser("backend-equivalence", help="Compare connected and bundled safety-gate traces")
     backend.add_argument("--connected-adapter", type=Path, required=True)
     backend.add_argument("--fixture", type=Path, required=True)
+
+    snapshot = sub.add_parser("publish-snapshot", help="Materialize a verified reviewable snapshot without committing it")
+    snapshot.add_argument("--artifact-dir", type=Path, required=True)
+    snapshot.add_argument("--repository-root", type=Path, default=ROOT)
 
     args = parser.parse_args(argv)
     try:
@@ -103,6 +133,22 @@ def main(argv: list[str] | None = None) -> int:
             result = _backend_equivalence(args.connected_adapter, args.fixture)
             print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
             return 0 if result.get("state") == "PASS" else 1
+
+        if args.command == "compare":
+            result = _read_json_object(args.results, "benchmark results")
+            rendered = render_comparison_html(result)
+            if args.output is None:
+                sys.stdout.write(rendered + "\n")
+            else:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+                print(json.dumps({"output": str(args.output)}, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+            return 0
+
+        if args.command == "publish-snapshot":
+            destination = materialize_snapshot(args.artifact_dir, args.repository_root)
+            print(json.dumps({"snapshot_dir": str(destination), "snapshot_id": destination.name}, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+            return 0
 
         plugin_names = _plugins(args.plugins)
         if args.command == "check":
@@ -117,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         subject_argv = load_adapter_argv(args.subject_adapter)
         judge_argv = load_adapter_argv(args.judge_adapter)
         scenarios = load_scenarios(ROOT, plugin_names)
-        result = run_benchmark(
+        run_result = run_benchmark(
             scenarios,
             subject_argv=subject_argv,
             judge_argv=judge_argv,
@@ -125,7 +171,14 @@ def main(argv: list[str] | None = None) -> int:
             repository_sha=repository_sha,
             allow_self_judge=args.allow_self_judge,
         )
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        result = build_result_document(run_result)
+        destination = publish_benchmark_artifacts(args.output_root, result)
+        print(json.dumps({
+            "artifact_dir": str(destination),
+            "benchmark_id": result["benchmark_id"],
+            "completeness": result["completeness"],
+            "comparative_complete": result["comparative_complete"],
+        }, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
         return 0
     except (ValueError, RuntimeError, TimeoutError, OSError) as exc:
         return _emit_error(str(exc))
