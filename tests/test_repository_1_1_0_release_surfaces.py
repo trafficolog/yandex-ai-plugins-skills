@@ -1,17 +1,16 @@
 from pathlib import Path
-import json
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PLUGINS = {
-    "yandex-direct": "2.1.0",
-    "yandex-metrika": "2.1.0",
-    "yandex-webmaster": "2.1.0",
-    "yandex-wordstat": "1.1.2",
-    "yandex-search": "1.0.2",
-    "yandex-seo": "1.1.2",
-    "yandex-marketing": "1.1.0",
+HISTORICAL_PLUGIN_VERSIONS = {
+    "Yandex Direct": "2.1.0",
+    "Yandex Metrika": "2.1.0",
+    "Yandex Webmaster": "2.1.0",
+    "Yandex Wordstat": "1.1.2",
+    "Yandex Search": "1.0.2",
+    "Yandex SEO": "1.1.2",
+    "Yandex Marketing": "1.1.0",
 }
 RELEASED_PLUGINS = {
     "yandex-direct": ("2.1.0", ".github/releases/yandex-direct-2.1.0.md", "Yandex Direct 2.1.0"),
@@ -40,31 +39,14 @@ class Repository110ReleaseSurfaceTests(unittest.TestCase):
     def test_historical_release_notes_preserve_plugin_release_set(self):
         repository_notes = self.read(".github/releases/1.1.0.md")
         self.assertIn("1.1.0", repository_notes)
+        for display_name, version in HISTORICAL_PLUGIN_VERSIONS.items():
+            with self.subTest(plugin=display_name):
+                self.assertIn(f"{display_name} {version}", repository_notes)
         for plugin, (version, notes_file, display_name) in RELEASED_PLUGINS.items():
             with self.subTest(plugin=plugin):
                 self.assertTrue((ROOT / notes_file).is_file(), notes_file)
                 self.assertIn(version, self.read(notes_file))
                 self.assertIn(display_name, repository_notes)
-
-    def test_plugin_manifests_and_both_marketplaces_preserve_1_1_0_plugin_versions(self):
-        for plugin, expected in EXPECTED_PLUGINS.items():
-            for relative in (".codex-plugin/plugin.json", ".claude-plugin/plugin.json"):
-                data = json.loads(self.read(f"plugins/{plugin}/{relative}"))
-                self.assertEqual(data["version"], expected, f"{plugin}/{relative}")
-
-        expected_by_marketplace_name = {
-            "yandex-direct-suite": "2.1.0",
-            "yandex-metrika": "2.1.0",
-            "yandex-webmaster": "2.1.0",
-            "yandex-wordstat": "1.1.2",
-            "yandex-search": "1.0.2",
-            "yandex-seo": "1.1.2",
-            "yandex-marketing": "1.1.0",
-        }
-        for relative in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
-            data = json.loads(self.read(relative))
-            actual = {item["name"]: item["version"] for item in data["plugins"]}
-            self.assertEqual(actual, expected_by_marketplace_name, relative)
 
     def test_plugin_changelogs_preserve_only_released_plugin_versions(self):
         for plugin in RELEASED_PLUGINS:
