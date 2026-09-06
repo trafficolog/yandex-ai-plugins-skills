@@ -2,13 +2,13 @@
 
 <p align="center"><strong>Русский</strong> · <a href="README.en.md">English</a></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.2.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.3.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 Маркетплейс независимых AI-плагинов **для сервисов Яндекса** — Direct, Metrika, Webmaster, Wordstat, Search и кросс-сервисной SEO/Marketing оркестрации — из AI-агентов и coding assistants. Это не набор плагинов для YandexGPT: каждый plugin даёт агенту специализированные skills, проверяемые API/workflow contracts и безопасный путь к данным конкретного сервиса.
 
-Текущий repository release — `1.2.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
+Текущий repository release — `1.3.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
 
 ## Что это и кому подходит
 
@@ -25,7 +25,7 @@
 | [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.1.0 | service | индексация, запросы, recrawl, sitemaps, feeds | exact preview + later-turn approval |
 | [`yandex-wordstat`](plugins/yandex-wordstat/) | 1.1.2 | service | спрос, частотность, динамика, регионы, candidate topics | нет consequential writes |
 | [`yandex-search`](plugins/yandex-search/) | 1.0.2 | service | SERP, позиции, конкуренты, clustering | нет |
-| [`yandex-seo`](plugins/yandex-seo/) | 1.1.2 | cross-service | organic evidence, Topical Architecture, Internal Linking | delegated preview only |
+| [`yandex-seo`](plugins/yandex-seo/) | 1.2.0 | cross-service | organic evidence, Topical Architecture, Internal Linking, Weekly Organic Report | delegated preview only |
 | [`yandex-marketing`](plugins/yandex-marketing/) | 1.1.0 | cross-service | paid acquisition, reconciliation, opportunities | delegated preview only |
 
 Полная матрица ownership и capabilities: [`docs/SERVICE_MATRIX.md`](docs/SERVICE_MATRIX.md).
@@ -90,7 +90,7 @@ Consequential write требует approval **точного** preview в пос
 
 ## Project Memory
 
-Repository `1.2.0` добавляет project-owned `.yandex-ai/` memory для устойчивого контекста между отдельными запусками: `project.yaml` хранит `USER_STATED` facts, `decisions.jsonl` — hash-chained безопасные projections execution receipts, `baselines/` — immutable freshness-aware snapshots, `hypotheses.md` — явно маркированные `HYPOTHESIS` / `DERIVED` records.
+Repository `1.2.0` добавил project-owned `.yandex-ai/` memory для устойчивого контекста между отдельными запусками: `project.yaml` хранит `USER_STATED` facts, `decisions.jsonl` — hash-chained безопасные projections execution receipts, `baselines/` — immutable freshness-aware snapshots, `hypotheses.md` — явно маркированные `HYPOTHESIS` / `DERIVED` records.
 
 ```bash
 python scripts/ya_project.py init --root . --project-id my-project --name "My project"
@@ -148,7 +148,7 @@ yandex-metrika       2.1.0
 yandex-webmaster     2.1.0
 yandex-wordstat      1.1.2
 yandex-search        1.0.2
-yandex-seo           1.1.2
+yandex-seo           1.2.0
 yandex-marketing     1.1.0
 ```
 
@@ -214,7 +214,7 @@ plugins/yandex-<service>/
 
 ## Weekly Organic Report
 
-P2 добавляет transport-free read-only workflow `yandex-seo-weekly-report`. Нормативный machine artifact — `seo-weekly-organic-report/v1`, а portable immutable package описывается `yandex-ai-artifact-manifest/v1`.
+Repository `1.3.0` и `yandex-seo 1.2.0` добавляют transport-free read-only workflow `yandex-seo-weekly-report`. Нормативный machine artifact — `seo-weekly-organic-report/v1`, а portable immutable package описывается `yandex-ai-artifact-manifest/v1`.
 
 ```bash
 cd plugins/yandex-seo
