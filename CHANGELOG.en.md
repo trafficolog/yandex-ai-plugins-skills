@@ -4,6 +4,26 @@
 
 All notable repository-level changes are documented here. Plugins use independent SemVer and keep their own changelogs.
 
+## [1.4.0] — 2026-09-06
+
+P3 Benchmark Infrastructure is a repository-only release of the executable provider-neutral eval benchmark. The proven status is `INFRASTRUCTURE_READY`; accepted live multi-model evidence for `COMPARATIVE_COMPLETE` is not included in this release.
+
+### Changed
+
+- Added `scripts/ya_eval.py` plus stdlib-only `scripts/eval_benchmark/` to execute existing `evals/scenarios.json` v2 through bounded stdio JSONL subject/judge adapters without a provider SDK dependency.
+- `must_mention_tokens` remains separate deterministic mechanical evidence; an independent judge evaluates semantic `outcome`, `must_convey`, and `must_not_claim` with fail-closed `PASS|FAIL|UNDETERMINED` semantics.
+- Benchmark results record runtime/model/version/evaluation timestamp, repository SHA, scenario/source hashes, and separate mechanical, semantic, backend, and memory evidence.
+- The backend-equivalence harness compares connected MCP/app and bundled helper/file paths against the safety-relevant exact-preview/later-turn approval contract without live Yandex consequential writes in deterministic fixtures.
+- Added Project Memory adversarial fixtures for stale baselines, historical approval, prompt-like hypotheses, and conflicting facts; memory remains inert data and never becomes reusable approval.
+- `yandex-ai-benchmark-result/v1` / `yandex-ai-benchmark-manifest/v1`, self-contained HTML, and reviewable snapshots use immutable SHA-256 verified publication semantics; conflicting destinations are never overwritten.
+- `CONTRACT_MATRIX.json`, repository validation, and RU/EN README / Architecture / Getting Started / Security / Roadmap are synchronized with P3 and explicitly distinguish `INFRASTRUCTURE_READY` from `COMPARATIVE_COMPLETE`.
+- Deterministic CI uses fake adapters only as infrastructure evidence; absence of an accepted live multi-model snapshot is not represented as a semantic pass by multiple real models.
+- Release intent is repository-only: `.github/releases/release.json` contains `plugins: []`; plugin releases/tags are neither created nor retargeted.
+
+### Plugin versions unchanged
+
+Direct `2.1.0`, Metrika `2.1.0`, Webmaster `2.1.0`, Wordstat `1.1.2`, Search `1.0.2`, SEO `1.2.0`, Marketing `1.1.0`.
+
 ## [1.3.0] — 2026-09-06
 
 P2 Weekly Organic Report is the first depth-first read-only end-to-end workflow after P0 safety and P1 Project Memory. The repository release includes Yandex SEO `1.2.0`; all other plugin SemVer values remain unchanged.
