@@ -4,7 +4,7 @@
 
 Status reflects what this repository actually ships, not upstream product availability. Production plugins use independent SemVer.
 
-> **Repository 1.1.0 release state:** Direct, Metrika, and Webmaster advance to `2.1.0` with mechanically enforced `yandex-ai-approval/v2`, authenticated-principal/cardinality binding, a bulk/unknown pre-transport gate, and `yandex-ai-execution/v1` receipts. Wordstat, Search, SEO, and Marketing remain on their current versions.
+> **Repository 1.3.0 release state:** Yandex SEO advances to `1.2.0` with the transport-free Weekly Organic Report, `seo-weekly-organic-report/v1`, immutable `yandex-ai-artifact-manifest/v1`, and self-contained HTML. All other production plugins keep their published versions.
 
 | Service plugin | Tier | Status | Version | Primary scope | Execution sources to evaluate |
 |---|---:|---|---|---|---|
@@ -13,7 +13,7 @@ Status reflects what this repository actually ships, not upstream product availa
 | Yandex Webmaster | 1 | **available** | 2.1.0 | indexing, diagnostics, queries, sitemaps, recrawl, links, feeds, exports; approval v2; descriptor/batch cardinality; execution receipts | bundled API helpers; optional MCP/app backend |
 | Yandex Wordstat | 1 | **available** | 1.1.2 | demand, frequency, semantics, dynamics, regions, trends; candidate topic maps; 20-association cap; unambiguous seed/topic relation provenance | bundled Wordstat API within Yandex Search API v2 helpers; optional MCP/app backend |
 | Yandex Search | 1 | **available** | 1.0.2 | web SERP, batch, rankings, competitors, URL-overlap clustering; 250-result depth | bundled Search API v2 helpers; optional MCP/app backend |
-| Yandex SEO | X | **available** | 1.1.2 | cross-service demand, visibility, performance, gaps, cannibalization, topical architecture, internal-link planning, prioritization; hardened structural/link artifact validation | pure-data orchestration over Wordstat + Search + Webmaster + Metrika |
+| Yandex SEO | X | **available** | 1.2.0 | cross-service demand, visibility, performance, gaps, cannibalization, topical architecture, internal-link planning, Weekly Organic Report, immutable artifacts, prioritization | pure-data orchestration over Wordstat + Search + Webmaster + Metrika |
 | Yandex Marketing | X | **available** | 1.1.0 | paid performance, KPI reconciliation, evidence roles, demand/query intelligence, landing/budget opportunities | pure-data orchestration over Direct + Metrika + Wordstat with optional Search context |
 | Yandex Tracker | 2 | backlog | — | issues, queues, permissions, worklogs, boards | official API first |
 | Yandex 360 | 2 | backlog | — | mail, calendar, disk, organization | official APIs first |
@@ -24,7 +24,7 @@ Status reflects what this repository actually ships, not upstream product availa
 
 ## Cross-service workflows
 
-- `yandex-seo`: **available 1.1.2** — Wordstat + Search + Webmaster + Metrika; Topical Architecture and Internal Linking; no own transport, delegated previews only.
+- `yandex-seo`: **available 1.2.0** — Wordstat + Search + Webmaster + Metrika; Topical Architecture, Internal Linking, and Weekly Organic Report; no own transport, delegated previews only.
 - `yandex-marketing`: **available 1.1.0** — Direct + Metrika + Wordstat, Search optional; `canonical` / `reconciliation_only` / `enrichment` roles are explicit.
 - `yandex-ecommerce`, `yandex-mobile-growth`, `yandex-growth`: backlog ideas only.
 
@@ -54,6 +54,10 @@ Ownership contract:
 - `OBSERVED`, `DERIVED`, `HYPOTHESIS`, and `METHODOLOGY` remain distinct. Methodology from semantic-cocoon/TGA/QBST material is not promoted to a ranking fact without independent authoritative evidence.
 
 Both `GREENFIELD` and `EXISTING_SITE` modes are supported. When Search evidence is missing, the architecture must disclose `SERP_VALIDATION_MISSING` and page boundaries remain hypotheses.
+
+## P2 — Weekly Organic Report
+
+`yandex-seo-weekly-report` produces normative `seo-weekly-organic-report/v1`, self-contained HTML, and an immutable artifact set under `yandex-ai-artifact-manifest/v1`. The workflow consumes structured evidence from owning service plugins/file fallback and adds no Yandex transport. Every delegated action is marked `PREVIEW-ONLY`.
 
 ## Repository controls
 
