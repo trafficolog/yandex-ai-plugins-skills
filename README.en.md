@@ -2,13 +2,13 @@
 
 <p align="center"><a href="README.md">Русский</a> · <strong>English</strong></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.2.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.3.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 A marketplace of independent AI plugins **for Yandex services** — Direct, Metrika, Webmaster, Wordstat, Search, plus cross-service SEO/Marketing orchestration — used from AI agents and coding assistants. This is not a plugin set for YandexGPT: each plugin gives an agent specialized skills, verifiable API/workflow contracts, and a safe path to the owning Yandex service.
 
-The current repository release is `1.2.0`. Plugins version independently; published release/tag records are treated as immutable.
+The current repository release is `1.3.0`. Plugins version independently; published release/tag records are treated as immutable.
 
 ## What this is and who it is for
 
@@ -25,7 +25,7 @@ It covers PPC/marketing analytics, SEO, demand research, SERP analysis, indexing
 | [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.1.0 | service | indexing, queries, recrawl, sitemaps, feeds | exact preview + later-turn approval |
 | [`yandex-wordstat`](plugins/yandex-wordstat/) | 1.1.2 | service | demand, frequency, dynamics, regions, candidate topics | no consequential writes |
 | [`yandex-search`](plugins/yandex-search/) | 1.0.2 | service | SERP, rankings, competitors, clustering | no |
-| [`yandex-seo`](plugins/yandex-seo/) | 1.1.2 | cross-service | organic evidence, Topical Architecture, Internal Linking | delegated preview only |
+| [`yandex-seo`](plugins/yandex-seo/) | 1.2.0 | cross-service | organic evidence, Topical Architecture, Internal Linking, Weekly Organic Report | delegated preview only |
 | [`yandex-marketing`](plugins/yandex-marketing/) | 1.1.0 | cross-service | paid acquisition, reconciliation, opportunities | delegated preview only |
 
 Full ownership and capability matrix: [`docs/SERVICE_MATRIX.en.md`](docs/SERVICE_MATRIX.en.md).
@@ -90,7 +90,7 @@ Normative details: [`docs/PLUGIN_STANDARD.en.md`](docs/PLUGIN_STANDARD.en.md) an
 
 ## Project Memory
 
-Repository `1.2.0` adds project-owned `.yandex-ai/` memory for durable context across separate runs: `project.yaml` stores `USER_STATED` facts, `decisions.jsonl` stores hash-chained safe projections of execution receipts, `baselines/` stores immutable freshness-aware snapshots, and `hypotheses.md` stores explicitly managed `HYPOTHESIS` / `DERIVED` records.
+Repository `1.2.0` added project-owned `.yandex-ai/` memory for durable context across separate runs: `project.yaml` stores `USER_STATED` facts, `decisions.jsonl` stores hash-chained safe projections of execution receipts, `baselines/` stores immutable freshness-aware snapshots, and `hypotheses.md` stores explicitly managed `HYPOTHESIS` / `DERIVED` records.
 
 ```bash
 python scripts/ya_project.py init --root . --project-id my-project --name "My project"
@@ -148,7 +148,7 @@ yandex-metrika       2.1.0
 yandex-webmaster     2.1.0
 yandex-wordstat      1.1.2
 yandex-search        1.0.2
-yandex-seo           1.1.2
+yandex-seo           1.2.0
 yandex-marketing     1.1.0
 ```
 
@@ -214,7 +214,7 @@ Project code and original documentation are MIT licensed. Official Yandex docume
 
 ## Weekly Organic Report
 
-P2 adds the transport-free read-only `yandex-seo-weekly-report` workflow. The normative machine artifact is `seo-weekly-organic-report/v1`, and the portable immutable package uses `yandex-ai-artifact-manifest/v1`.
+Repository `1.3.0` and `yandex-seo 1.2.0` add the transport-free read-only `yandex-seo-weekly-report` workflow. The normative machine artifact is `seo-weekly-organic-report/v1`, and the portable immutable package uses `yandex-ai-artifact-manifest/v1`.
 
 ```bash
 cd plugins/yandex-seo
