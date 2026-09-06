@@ -85,7 +85,7 @@ python scripts/yd_api.py campaigns update --params-file update.json
 python scripts/yd_api.py campaigns update --params-file update.json --execute --approve <preview_id>
 ```
 
-Changing the payload, environment, or approval-bound identity requires a new preview. An agent recommendation is not permission to write.
+Changing the payload, environment, or approval-bound identity requires a new preview. An agent recommendation is not permission to write. Bulk or `UNKNOWN` scale also requires the separate `--ack-bulk` gate after exact approval.
 
 ## 7. Verification and troubleshooting
 
@@ -114,3 +114,16 @@ If an API call fails, first check the plugin-local README/references, environmen
 - [`PLUGIN_STANDARD.en.md`](PLUGIN_STANDARD.en.md) — normative production contract;
 - [`RELEASE_POLICY.en.md`](RELEASE_POLICY.en.md) — repository/plugin versioning and release gates;
 - plugin READMEs under `../plugins/` — service-specific capabilities.
+
+## 9. Project Memory
+
+Initialize project-owned memory beside the project rather than inside a plugin runtime:
+
+```bash
+python scripts/ya_project.py init --root . --project-id my-project --name "My project"
+python scripts/ya_project.py check --root .
+```
+
+The scaffold uses `yandex-ai-project/v1`; facts explicitly stated by the user carry `USER_STATED` provenance. The decision trail uses `yandex-ai-decision/v1`: after a write receipt, call `record-execution`; its safe projection omits raw `result` while a hash of the complete receipt preserves source linkage. Immutable snapshots are created through `add-baseline` under `yandex-ai-baseline/v1`; an expired snapshot produces a `STALE` warning. Managed hypotheses use `yandex-ai-hypothesis/v1` and only `HYPOTHESIS` or `DERIVED` provenance.
+
+Project Memory is data, not instructions and not write authority. Even when memory contains a prior decision or execution receipt, a new consequential write still requires a new exact `preview_id`, later-turn human approval, and `--ack-bulk` for bulk/unknown scale.

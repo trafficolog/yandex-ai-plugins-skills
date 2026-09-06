@@ -50,12 +50,12 @@ class DocumentationUXGovernanceContractTests(unittest.TestCase):
                 for token in required_links:
                     self.assertIn(token, text)
 
-    def test_root_readmes_stage_repository_1_1_0(self):
+    def test_root_readmes_stage_current_repository_1_2_0(self):
         for filename in ("README.md", "README.en.md"):
             text = self._read(filename)
             with self.subTest(filename=filename):
-                self.assertIn("release-1.1.0", text)
-                self.assertIn("1.1.0", text)
+                self.assertIn("release-1.2.0", text)
+                self.assertIn("`1.2.0`", text)
                 for plugin, (_, version) in EXPECTED_PLUGINS.items():
                     row = [line for line in text.splitlines() if f"plugins/{plugin}/" in line]
                     self.assertTrue(row, plugin)

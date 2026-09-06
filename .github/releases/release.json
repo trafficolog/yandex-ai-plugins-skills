@@ -1,32 +1,10 @@
 {
   "schema_version": 1,
   "repository": {
-    "version": "1.1.0",
-    "tag": "1.1.0",
-    "title": "Repository 1.1.0",
-    "notes_file": ".github/releases/1.1.0.md"
+    "version": "1.2.0",
+    "tag": "1.2.0",
+    "title": "Repository 1.2.0",
+    "notes_file": ".github/releases/1.2.0.md"
   },
-  "plugins": [
-    {
-      "plugin": "yandex-direct",
-      "version": "2.1.0",
-      "tag": "yandex-direct-v2.1.0",
-      "title": "Yandex Direct 2.1.0",
-      "notes_file": ".github/releases/yandex-direct-2.1.0.md"
-    },
-    {
-      "plugin": "yandex-metrika",
-      "version": "2.1.0",
-      "tag": "yandex-metrika-v2.1.0",
-      "title": "Yandex Metrika 2.1.0",
-      "notes_file": ".github/releases/yandex-metrika-2.1.0.md"
-    },
-    {
-      "plugin": "yandex-webmaster",
-      "version": "2.1.0",
-      "tag": "yandex-webmaster-v2.1.0",
-      "title": "Yandex Webmaster 2.1.0",
-      "notes_file": ".github/releases/yandex-webmaster-2.1.0.md"
-    }
-  ]
+  "plugins": []
 }

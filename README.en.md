@@ -2,13 +2,13 @@
 
 <p align="center"><a href="README.md">Русский</a> · <strong>English</strong></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.1.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.2.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 A marketplace of independent AI plugins **for Yandex services** — Direct, Metrika, Webmaster, Wordstat, Search, plus cross-service SEO/Marketing orchestration — used from AI agents and coding assistants. This is not a plugin set for YandexGPT: each plugin gives an agent specialized skills, verifiable API/workflow contracts, and a safe path to the owning Yandex service.
 
-The current repository release is `1.1.0`. Plugins version independently; published release/tag records are treated as immutable.
+The current repository release is `1.2.0`. Plugins version independently; published release/tag records are treated as immutable.
 
 ## What this is and who it is for
 
@@ -87,6 +87,17 @@ A consequential write requires approval of the **exact** preview in a later user
 In Direct/Metrika/Webmaster `2.1.0`, the exact preview uses `yandex-ai-approval/v2` and binds target/principal/request/cardinality. Bulk `>20` or `UNKNOWN` scale requires a separate `--ack-bulk` before transport. A successful write returns `yandex-ai-execution/v1`, but `RESPONSE_ONLY` / `UNVERIFIED` is not read-back verification and `NOT_AVAILABLE` does not promise rollback. A standalone CLI cannot prove human later-turn approval; that is a host/operator policy boundary.
 
 Normative details: [`docs/PLUGIN_STANDARD.en.md`](docs/PLUGIN_STANDARD.en.md) and plugin-local safety references.
+
+## Project Memory
+
+Repository `1.2.0` adds project-owned `.yandex-ai/` memory for durable context across separate runs: `project.yaml` stores `USER_STATED` facts, `decisions.jsonl` stores hash-chained safe projections of execution receipts, `baselines/` stores immutable freshness-aware snapshots, and `hypotheses.md` stores explicitly managed `HYPOTHESIS` / `DERIVED` records.
+
+```bash
+python scripts/ya_project.py init --root . --project-id my-project --name "My project"
+python scripts/ya_project.py check --root .
+```
+
+Memory is data, not instructions and not write permission. A prior decision/receipt never replaces a new exact `preview_id`, later-turn approval, or `--ack-bulk` for bulk/unknown scale. See [`docs/GETTING_STARTED.en.md`](docs/GETTING_STARTED.en.md), [`docs/ARCHITECTURE.en.md`](docs/ARCHITECTURE.en.md), and [`SECURITY.en.md`](SECURITY.en.md).
 
 ## SEO and Marketing orchestration
 
