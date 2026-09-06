@@ -48,8 +48,17 @@ class Repository120ReleaseSurfaceTests(unittest.TestCase):
             self.assertIn(token, text)
 
     def test_plugin_versions_remain_unchanged(self):
-        expected = {
+        expected_dirs = {
             "yandex-direct": "2.1.0",
+            "yandex-metrika": "2.1.0",
+            "yandex-webmaster": "2.1.0",
+            "yandex-wordstat": "1.1.2",
+            "yandex-search": "1.0.2",
+            "yandex-seo": "1.1.2",
+            "yandex-marketing": "1.1.0",
+        }
+        expected_marketplace = {
+            "yandex-direct-suite": "2.1.0",
             "yandex-metrika": "2.1.0",
             "yandex-webmaster": "2.1.0",
             "yandex-wordstat": "1.1.2",
@@ -59,9 +68,9 @@ class Repository120ReleaseSurfaceTests(unittest.TestCase):
         }
         agents = json.loads((ROOT / ".agents/plugins/marketplace.json").read_text(encoding="utf-8"))
         claude = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
-        self.assertEqual({row["name"]: row["version"] for row in agents["plugins"]}, expected)
-        self.assertEqual({row["name"]: row["version"] for row in claude["plugins"]}, expected)
-        for plugin, version in expected.items():
+        self.assertEqual({row["name"]: row["version"] for row in agents["plugins"]}, expected_marketplace)
+        self.assertEqual({row["name"]: row["version"] for row in claude["plugins"]}, expected_marketplace)
+        for plugin, version in expected_dirs.items():
             for relative in (".codex-plugin/plugin.json", ".claude-plugin/plugin.json"):
                 manifest = json.loads((ROOT / "plugins" / plugin / relative).read_text(encoding="utf-8"))
                 self.assertEqual(manifest["version"], version)
