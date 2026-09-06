@@ -1,0 +1,15 @@
+{
+  "schema": "yandex-ai-backend-equivalence-fixture/v1",
+  "logical_request_id": "direct-update-1",
+  "request": {
+    "environment": "production",
+    "service": "campaigns",
+    "method": "update",
+    "params": {"Campaigns": [{"Id": 123}]}
+  },
+  "target": {
+    "client_login": "client-a",
+    "principal_id": "fixture-principal"
+  },
+  "ack_bulk": false
+}

@@ -3,15 +3,28 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import re
 import sys
 
 try:
+    from .eval_benchmark.backend_trace import (
+        compare_backend_traces,
+        load_fixture,
+        run_bundled_direct_fixture,
+    )
+    from .eval_benchmark.protocol import REQUEST_SCHEMA, canonical_json_bytes, invoke_adapter
     from .eval_benchmark.runner import run_benchmark
     from .eval_benchmark.scenarios import load_scenarios
 except ImportError:
+    from eval_benchmark.backend_trace import (
+        compare_backend_traces,
+        load_fixture,
+        run_bundled_direct_fixture,
+    )
+    from eval_benchmark.protocol import REQUEST_SCHEMA, canonical_json_bytes, invoke_adapter
     from eval_benchmark.runner import run_benchmark
     from eval_benchmark.scenarios import load_scenarios
 
@@ -44,6 +57,26 @@ def _emit_error(message: str) -> int:
     return 2
 
 
+def _backend_equivalence(connected_config: Path, fixture_path: Path) -> dict[str, object]:
+    fixture = load_fixture(fixture_path)
+    connected_argv = load_adapter_argv(connected_config)
+    invocation_id = "backend-" + hashlib.sha256(canonical_json_bytes(fixture)).hexdigest()[:24]
+    response = invoke_adapter(
+        connected_argv,
+        {
+            "schema": REQUEST_SCHEMA,
+            "invocation_id": invocation_id,
+            "kind": "backend-equivalence",
+            "payload": {"fixture": fixture},
+        },
+    )
+    output = response.get("output")
+    if not isinstance(output, dict) or not isinstance(output.get("trace"), dict):
+        raise ValueError("connected backend adapter must return output.trace")
+    bundled = run_bundled_direct_fixture(ROOT, fixture)
+    return compare_backend_traces(output["trace"], bundled)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Provider-neutral executable eval benchmark")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -60,8 +93,17 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--output-root", type=Path, default=Path("artifacts/evals"))
     run.add_argument("--allow-self-judge", action="store_true")
 
+    backend = sub.add_parser("backend-equivalence", help="Compare connected and bundled safety-gate traces")
+    backend.add_argument("--connected-adapter", type=Path, required=True)
+    backend.add_argument("--fixture", type=Path, required=True)
+
     args = parser.parse_args(argv)
     try:
+        if args.command == "backend-equivalence":
+            result = _backend_equivalence(args.connected_adapter, args.fixture)
+            print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+            return 0 if result.get("state") == "PASS" else 1
+
         plugin_names = _plugins(args.plugins)
         if args.command == "check":
             scenarios = load_scenarios(ROOT, plugin_names)
