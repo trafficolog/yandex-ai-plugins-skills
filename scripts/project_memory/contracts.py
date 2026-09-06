@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import hashlib
+import json
 import math
 from typing import Any
 
 
 PROJECT_SCHEMA = "yandex-ai-project/v1"
+EXECUTION_SCHEMA = "yandex-ai-execution/v1"
 FUTURE_SKEW = timedelta(minutes=5)
 _SECRET_TERMS = (
     "authorization",
@@ -36,16 +39,32 @@ def format_rfc3339(value: datetime) -> str:
     return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def _json_compatible(value: Any) -> bool:
+def is_json_compatible(value: Any) -> bool:
     if value is None or isinstance(value, (str, bool, int)):
         return True
     if isinstance(value, float):
         return math.isfinite(value)
     if isinstance(value, list):
-        return all(_json_compatible(item) for item in value)
+        return all(is_json_compatible(item) for item in value)
     if isinstance(value, dict):
-        return all(isinstance(key, str) and _json_compatible(item) for key, item in value.items())
+        return all(isinstance(key, str) and is_json_compatible(item) for key, item in value.items())
     return False
+
+
+def canonical_json_bytes(value: Any) -> bytes:
+    if not is_json_compatible(value):
+        raise ValueError("value must be finite JSON-compatible data")
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def normalize_field_name(name: str) -> str:
@@ -94,6 +113,64 @@ def _check_event_time(raw: Any, *, where: str, at: datetime, errors: list[str]) 
     return parsed
 
 
+def validate_execution_receipt(receipt: object) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(receipt, dict):
+        return ["execution receipt must be a JSON object"]
+    if receipt.get("schema") != EXECUTION_SCHEMA:
+        errors.append(f"receipt schema must equal {EXECUTION_SCHEMA}")
+    for key in ("execution_id", "preview_id", "plugin", "operation"):
+        _require_string(receipt, key, "receipt", errors)
+    for key in ("target", "cardinality", "execution", "verification", "rollback"):
+        if not isinstance(receipt.get(key), dict):
+            errors.append(f"receipt.{key} must be an object")
+    if "result" not in receipt:
+        errors.append("receipt.result is required for exact source hashing")
+    if not is_json_compatible(receipt):
+        errors.append("execution receipt must be finite JSON-compatible data")
+
+    execution = receipt.get("execution")
+    if isinstance(execution, dict) and execution.get("state") != "EXECUTED":
+        errors.append("receipt.execution.state must equal EXECUTED")
+
+    cardinality = receipt.get("cardinality")
+    if isinstance(cardinality, dict):
+        scale = cardinality.get("scale")
+        items = cardinality.get("items")
+        threshold = cardinality.get("threshold")
+        bulk = cardinality.get("bulk")
+        if scale not in {"KNOWN", "UNKNOWN"}:
+            errors.append("receipt.cardinality.scale must be KNOWN or UNKNOWN")
+        if threshold != 20:
+            errors.append("receipt.cardinality.threshold must equal repository policy 20")
+        if not isinstance(bulk, bool):
+            errors.append("receipt.cardinality.bulk must be boolean")
+        if scale == "KNOWN" and (not isinstance(items, int) or isinstance(items, bool) or items < 0):
+            errors.append("KNOWN receipt.cardinality.items must be a non-negative integer")
+        if scale == "KNOWN" and isinstance(items, int) and not isinstance(items, bool) and isinstance(bulk, bool):
+            if bulk != (items > 20):
+                errors.append("KNOWN receipt.cardinality.bulk must equal items > 20")
+        if scale == "UNKNOWN" and items is not None:
+            errors.append("UNKNOWN receipt.cardinality.items must be null")
+        if scale == "UNKNOWN" and bulk is not True:
+            errors.append("UNKNOWN receipt.cardinality.bulk must be true")
+
+    verification = receipt.get("verification")
+    if isinstance(verification, dict):
+        _require_string(verification, "capability", "receipt.verification", errors)
+        _require_string(verification, "state", "receipt.verification", errors)
+    rollback = receipt.get("rollback")
+    if isinstance(rollback, dict):
+        _require_string(rollback, "capability", "receipt.rollback", errors)
+        if not isinstance(rollback.get("snapshot_available"), bool):
+            errors.append("receipt.rollback.snapshot_available must be boolean")
+
+    safe_source = {key: value for key, value in receipt.items() if key != "result"}
+    for secret_path in find_secret_like_paths(safe_source):
+        errors.append(f"secret-like field is not allowed in receipt safety projection at {secret_path}")
+    return errors
+
+
 def validate_project(doc: object, *, at: datetime) -> list[str]:
     errors: list[str] = []
     if at.tzinfo is None or at.utcoffset() is None:
@@ -138,7 +215,7 @@ def validate_project(doc: object, *, at: datetime) -> list[str]:
                 facts_by_id[fact_id] = fact
         if "value" not in fact:
             errors.append(f"{where}.value is required")
-        elif not _json_compatible(fact["value"]):
+        elif not is_json_compatible(fact["value"]):
             errors.append(f"{where}.value must be JSON-compatible")
 
         stated = _check_event_time(fact.get("stated_at"), where=f"{where}.stated_at", at=at, errors=errors)

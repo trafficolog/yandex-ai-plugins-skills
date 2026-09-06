@@ -16,6 +16,7 @@ from project_memory.contracts import (
     parse_rfc3339,
     validate_project,
 )
+from project_memory.decisions import record_execution, validate_decision_chain
 from project_memory.storage import atomic_write_text
 from project_memory.yaml_subset import YamlSubsetError, dumps as yaml_dumps, loads as yaml_loads
 
@@ -64,6 +65,8 @@ def _validate_scaffold(root: Path, *, at: datetime) -> tuple[list[str], list[str
         errors.append(str(exc))
         return errors, warnings
     errors.extend(validate_project(doc, at=at))
+    _, decision_errors = validate_decision_chain(memory / "decisions.jsonl", at=at)
+    errors.extend(decision_errors)
     return errors, warnings
 
 
@@ -217,6 +220,31 @@ def _supersede_fact(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_receipt(source: str) -> dict[str, object]:
+    try:
+        text = sys.stdin.read() if source == "-" else Path(source).read_text(encoding="utf-8")
+        value = json.loads(text)
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ProjectMemoryError(f"cannot read execution receipt JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise ProjectMemoryError("execution receipt must be a JSON object")
+    return value
+
+
+def _record_execution(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve()
+    memory = _memory_root(root)
+    if not memory.is_dir():
+        raise ProjectMemoryError(f"project memory is not initialized: {memory}")
+    source = _read_receipt(args.receipt)
+    try:
+        record = record_execution(memory, source, now=_now())
+    except ValueError as exc:
+        raise ProjectMemoryError(str(exc)) from exc
+    print(record["record_id"])
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ya-project")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -248,6 +276,11 @@ def build_parser() -> argparse.ArgumentParser:
     supersede_parser.add_argument("--value", required=True)
     supersede_parser.add_argument("--stated-at", required=True)
     supersede_parser.set_defaults(handler=_supersede_fact)
+
+    record_parser = subparsers.add_parser("record-execution")
+    record_parser.add_argument("receipt")
+    record_parser.add_argument("--root", default=".")
+    record_parser.set_defaults(handler=_record_execution)
     return parser
 
 
