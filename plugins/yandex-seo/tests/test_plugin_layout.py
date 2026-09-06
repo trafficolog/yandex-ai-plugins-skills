@@ -15,7 +15,7 @@ class PluginLayoutTests(unittest.TestCase):
         p = ROOT / '.codex-plugin/plugin.json'
         data = json.loads(p.read_text(encoding='utf-8'))
         self.assertEqual(data['name'], 'yandex-seo')
-        self.assertEqual(data['version'], '1.1.2')
+        self.assertEqual(data['version'], '1.2.0')
         self.assertEqual(data['skills'], './skills/')
 
     def test_exact_skill_set(self):
