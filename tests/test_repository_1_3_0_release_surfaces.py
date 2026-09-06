@@ -33,7 +33,7 @@ class Repository130ReleaseSurfaceTests(unittest.TestCase):
             release["plugins"],
             [
                 {
-                    "name": "yandex-seo",
+                    "plugin": "yandex-seo",
                     "version": "1.2.0",
                     "tag": "yandex-seo-v1.2.0",
                     "title": "Yandex SEO 1.2.0",
