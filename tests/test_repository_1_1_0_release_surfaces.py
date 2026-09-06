@@ -24,44 +24,29 @@ class Repository110ReleaseSurfaceTests(unittest.TestCase):
     def read(self, relative: str) -> str:
         return (ROOT / relative).read_text(encoding="utf-8")
 
-    def test_root_readmes_stage_repository_1_1_0(self):
-        for filename in ("README.md", "README.en.md"):
-            text = self.read(filename)
+    def test_repository_1_1_0_remains_historical(self):
+        marker = "## [1.1.0] — 2026-09-05"
+        for filename in ("CHANGELOG.md", "CHANGELOG.en.md"):
             with self.subTest(filename=filename):
-                self.assertIn("release-1.1.0", text)
-                self.assertIn("1.1.0", text)
-                for plugin, version in EXPECTED_PLUGINS.items():
-                    rows = [line for line in text.splitlines() if f"plugins/{plugin}/" in line]
-                    self.assertTrue(rows, plugin)
-                    self.assertTrue(any(f"| {version} |" in line for line in rows), (plugin, rows))
+                self.assertIn(marker, self.read(filename))
+        self.assertTrue((ROOT / ".github/releases/1.1.0.md").is_file())
 
-    def test_bilingual_changelogs_stage_repository_1_1_0(self):
+    def test_bilingual_changelogs_preserve_repository_1_1_0(self):
         marker = "## [1.1.0] — 2026-09-05"
         for filename in ("CHANGELOG.md", "CHANGELOG.en.md"):
             with self.subTest(filename=filename):
                 self.assertIn(marker, self.read(filename))
 
-    def test_declared_release_set_is_exact(self):
-        data = json.loads(self.read(".github/releases/release.json"))
-        self.assertEqual(
-            data["repository"],
-            {
-                "version": "1.1.0",
-                "tag": "1.1.0",
-                "title": "Repository 1.1.0",
-                "notes_file": ".github/releases/1.1.0.md",
-            },
-        )
-        self.assertTrue((ROOT / ".github/releases/1.1.0.md").is_file())
-        actual = {
-            item["plugin"]: (item["version"], item["tag"], item["notes_file"])
-            for item in data["plugins"]
-        }
-        self.assertEqual(actual, RELEASED_PLUGINS)
-        for _, (_, _, notes_file) in RELEASED_PLUGINS.items():
-            self.assertTrue((ROOT / notes_file).is_file(), notes_file)
+    def test_historical_release_notes_preserve_exact_plugin_release_set(self):
+        repository_notes = self.read(".github/releases/1.1.0.md")
+        self.assertIn("1.1.0", repository_notes)
+        for plugin, (version, tag, notes_file) in RELEASED_PLUGINS.items():
+            with self.subTest(plugin=plugin):
+                self.assertTrue((ROOT / notes_file).is_file(), notes_file)
+                self.assertIn(version, self.read(notes_file))
+                self.assertIn(tag, repository_notes)
 
-    def test_plugin_manifests_and_both_marketplaces_match_target_versions(self):
+    def test_plugin_manifests_and_both_marketplaces_preserve_1_1_0_plugin_versions(self):
         for plugin, expected in EXPECTED_PLUGINS.items():
             for relative in (".codex-plugin/plugin.json", ".claude-plugin/plugin.json"):
                 data = json.loads(self.read(f"plugins/{plugin}/{relative}"))
@@ -81,7 +66,7 @@ class Repository110ReleaseSurfaceTests(unittest.TestCase):
             actual = {item["name"]: item["version"] for item in data["plugins"]}
             self.assertEqual(actual, expected_by_marketplace_name, relative)
 
-    def test_plugin_changelogs_stage_only_released_plugin_versions(self):
+    def test_plugin_changelogs_preserve_only_released_plugin_versions(self):
         for plugin in RELEASED_PLUGINS:
             for filename in ("CHANGELOG.md", "CHANGELOG.en.md"):
                 self.assertIn(
