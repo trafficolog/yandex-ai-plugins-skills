@@ -7,7 +7,7 @@ SKILLS = {
     'yandex-seo','yandex-seo-audit','yandex-seo-opportunities','yandex-seo-clusters',
     'yandex-seo-content-gaps','yandex-seo-cannibalization','yandex-seo-ctr',
     'yandex-seo-conversions','yandex-seo-technical','yandex-seo-prioritize',
-    'yandex-seo-topical-architecture','yandex-seo-internal-linking'
+    'yandex-seo-topical-architecture','yandex-seo-internal-linking','yandex-seo-weekly-report'
 }
 
 class PluginLayoutTests(unittest.TestCase):
@@ -27,6 +27,7 @@ class PluginLayoutTests(unittest.TestCase):
             self.assertTrue((ROOT/rel).exists(), rel)
         self.assertTrue((ROOT/'references/topical-architecture.md').exists())
         self.assertTrue((ROOT/'references/internal-linking.md').exists())
+        self.assertTrue((ROOT/'references/weekly-organic-report.md').exists())
 
     def test_topical_architecture_contract(self):
         text = (ROOT/'skills/yandex-seo-topical-architecture/SKILL.md').read_text(encoding='utf-8')
@@ -45,6 +46,16 @@ class PluginLayoutTests(unittest.TestCase):
         self.assertIn('BROKEN_SEMANTIC_BRIDGE', text)
         self.assertIn('MISSING_JUSTIFIED_LINK', text)
         self.assertIn('exact-match', text.lower())
+
+    def test_weekly_report_contract(self):
+        text = (ROOT/'skills/yandex-seo-weekly-report/SKILL.md').read_text(encoding='utf-8')
+        self.assertIn('seo-weekly-organic-report/v1', text)
+        self.assertIn('yandex-ai-artifact-manifest/v1', text)
+        self.assertIn('Webmaster', text)
+        self.assertIn('Metrika', text)
+        self.assertIn('read-only', text.lower())
+        self.assertIn('PREVIEW-ONLY', text)
+        self.assertIn('seo_weekly_report.py demo', text)
 
     def test_no_credentials_contract(self):
         self.assertFalse((ROOT/'.env.example').exists())
