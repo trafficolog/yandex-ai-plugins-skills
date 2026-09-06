@@ -2,13 +2,13 @@
 
 <p align="center"><strong>Русский</strong> · <a href="README.en.md">English</a></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.3.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.4.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 Маркетплейс независимых AI-плагинов **для сервисов Яндекса** — Direct, Metrika, Webmaster, Wordstat, Search и кросс-сервисной SEO/Marketing оркестрации — из AI-агентов и coding assistants. Это не набор плагинов для YandexGPT: каждый plugin даёт агенту специализированные skills, проверяемые API/workflow contracts и безопасный путь к данным конкретного сервиса.
 
-Текущий repository release — `1.3.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
+Текущий repository release — `1.4.0`. Плагины версионируются независимо; уже опубликованные release/tag records считаются immutable.
 
 ## Что это и кому подходит
 
@@ -185,7 +185,7 @@ Strict reference freshness проверяется отдельно через `p
 - [`docs/REVIEW_FIRST_RELEASE.md`](docs/REVIEW_FIRST_RELEASE.md) — independent review guide;
 - [`docs/reviews/README.md`](docs/reviews/README.md) — индекс датированных independent review-артефактов;
 - [`docs/reviews/2026-09-05-fable-round2-closure.md`](docs/reviews/2026-09-05-fable-round2-closure.md) — последний датированный Fable Round 2 remediation artifact;
-- [`docs/reviews/2026-09-05-opus-codex-governance.md`](docs/reviews/2026-09-05-opus-codex-governance.md) — предыдущий governance review artifact;
+- [`docs/reviews/2026-09-05-opus-codex-governance.en.md`](docs/reviews/2026-09-05-opus-codex-governance.en.md) — предыдущий governance review artifact;
 - [`SECURITY.md`](SECURITY.md) — правила сообщения о security-sensitive проблемах;
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contributor entrypoint;
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — правила взаимодействия в repository community;
