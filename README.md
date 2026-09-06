@@ -222,3 +222,15 @@ python scripts/seo_weekly_report.py demo --output-root ./artifacts --generated-a
 ```
 
 Demo работает без credentials и сети. `report.html` self-contained; `report.json` остаётся source of truth; delegated actions имеют маркировку `PREVIEW-ONLY`. Manifest фиксирует SHA-256 managed files, а существующий artifact snapshot не перезаписывается при collision.
+
+## P3 Executable Eval Benchmark
+
+P3 добавляет repository-level **provider-neutral** benchmark infrastructure поверх существующих `evals/scenarios.json` v2. Быстрая offline-проверка fixtures не запускает внешнюю модель:
+
+```bash
+python scripts/ya_eval.py check --plugins all
+```
+
+`run` использует внешние subject/judge adapters через bounded stdio JSONL, `must_mention_tokens` остаётся mechanical evidence, а semantic verdict получает независимый judge. Backend-equivalence harness сравнивает safety-relevant P0 binding/gates без live Yandex write; memory-aware scenarios валидируют реальные P1 fixtures как инертные structured data. Результаты публикуются в immutable `yandex-ai-benchmark-result/v1` / `yandex-ai-benchmark-manifest/v1` artifacts и могут быть материализованы в reviewable snapshot без автоматического Git commit/push.
+
+Текущий статус реализации — `INFRASTRUCTURE_READY`. `COMPARATIVE_COMPLETE` означает отдельный evidence gate: нужны как минимум две реальные non-fake subject model identities, независимый non-fake judge, mechanical и semantic evidence, backend-equivalence `PASS`, memory-aware evidence и отсутствие counted `SELF_JUDGED`. На текущем repository head accepted live multi-model benchmark не проводился, поэтому зелёный CI и fake adapters не являются доказательством `COMPARATIVE_COMPLETE`.
