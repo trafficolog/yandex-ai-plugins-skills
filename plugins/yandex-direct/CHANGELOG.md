@@ -2,6 +2,15 @@
 
 [**Русский**](CHANGELOG.md) · [English](CHANGELOG.en.md)
 
+## [2.1.0] — 2026-09-05
+
+- Consequential Direct writes переведены на `yandex-ai-approval/v2`: exact service/method/environment/body, `Client-Login`, authenticated-principal binding, cardinality и safety capability входят в один approval digest.
+- Для известных entity-list writes helper связывает exact item count; непрозрачные write shapes получают `UNKNOWN` scale. Repository threshold `20` — внутренняя safety policy, а не лимит Yandex API.
+- Bulk `>20` и `UNKNOWN` execution требуют отдельный `--ack-bulk` после exact `--approve <preview_id>` и блокируются до HTTP transport без acknowledgement.
+- Успешный consequential write возвращает structured `yandex-ai-execution/v1` receipt с исходным `preview_id` и declared execution capability.
+- P0 честно объявляет verification как `RESPONSE_ONLY` / `UNVERIFIED`, rollback как `NOT_AVAILABLE`: успешный API response не считается read-back verification и не обещает автоматический rollback.
+- Standalone CLI механически проверяет exact preview binding, но не может доказать, что человек видел preview и подтвердил его в отдельном later conversational turn; эта provenance boundary остаётся обязанностью host/operator.
+
 ## [2.0.1] — 2026-09-04
 
 - Reports CLI переведён на env-only OAuth: `yd_report.py` читает token только из `YANDEX_DIRECT_TOKEN`; argv `--token` удалён.

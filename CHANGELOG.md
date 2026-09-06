@@ -4,6 +4,28 @@
 
 Все значимые изменения уровня репозитория фиксируются здесь. Плагины используют независимый SemVer и имеют собственные changelog-файлы.
 
+## [1.1.0] — 2026-09-05
+
+P0 executable write-safety release: repository contract и три write-capable service plugins переходят на единый approval/scale/receipt baseline без заявления неподтверждённого read-back или rollback.
+
+### Изменено
+
+- Direct, Metrika и Webmaster используют `yandex-ai-approval/v2`, связывающий exact target/request, authenticated-principal identity, cardinality и declared safety capability; секреты не попадают в preview.
+- Repository safety threshold `20` закреплён как внутренняя policy, не Yandex API limit. Bulk `>20` и `UNKNOWN` scale требуют отдельный `--ack-bulk` после exact `preview_id` approval и блокируются до transport без него.
+- Successful consequential execution возвращает `yandex-ai-execution/v1`; текущая verification capability честно объявлена `RESPONSE_ONLY` / `UNVERIFIED`, rollback — `NOT_AVAILABLE`.
+- Metrika сохраняет exact-file SHA-256, `artifact_rows` и expense `risk_flags`; Logs/import остаются single API operations (`KNOWN`, `items=1`) независимо от row count файла.
+- Webmaster сохраняет credential-safe binding embedded URL Basic Auth через OAuth-keyed/domain-separated HMAC и exact cardinality для feed batches.
+- Repository convergence tests и `CONTRACT_MATRIX.json` проверяют поведенческое совпадение трёх локальных safety kernels без root shared runtime dependency.
+- Standalone CLI механически доказывает exact preview binding, но не может доказать, что человек подтвердил preview в отдельном later conversational turn; human provenance остаётся обязательной host/operator policy.
+
+### Plugin releases
+
+Direct `2.1.0`, Metrika `2.1.0`, Webmaster `2.1.0`.
+
+### Остальные версии не изменены
+
+Wordstat `1.1.2`, Search `1.0.2`, SEO `1.1.2`, Marketing `1.1.0`.
+
 ## [1.0.10] — 2026-09-05
 
 Repository-only supply-chain hardening release, закрывающий issue #43. Production runtime и SemVer плагинов не меняются.

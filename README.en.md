@@ -2,13 +2,13 @@
 
 <p align="center"><a href="README.md">Русский</a> · <strong>English</strong></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.0.10-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.1.0-3155ff"></p>
 
 # Yandex AI Plugins
 
 A marketplace of independent AI plugins **for Yandex services** — Direct, Metrika, Webmaster, Wordstat, Search, plus cross-service SEO/Marketing orchestration — used from AI agents and coding assistants. This is not a plugin set for YandexGPT: each plugin gives an agent specialized skills, verifiable API/workflow contracts, and a safe path to the owning Yandex service.
 
-The current repository release is `1.0.10`. Plugins version independently; published release/tag records are treated as immutable.
+The current repository release is `1.1.0`. Plugins version independently; published release/tag records are treated as immutable.
 
 ## What this is and who it is for
 
@@ -20,9 +20,9 @@ It covers PPC/marketing analytics, SEO, demand research, SERP analysis, indexing
 
 | Plugin | Version | Type | Use it for | Writes |
 |---|---:|---|---|---|
-| [`yandex-direct`](plugins/yandex-direct/) | 2.0.1 | service | campaigns, Reports, keywords, budgets, audit | exact preview + later-turn approval |
-| [`yandex-metrika`](plugins/yandex-metrika/) | 2.0.0 | service | analytics, goals, attribution, Logs, imports | exact preview + later-turn approval |
-| [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.0.0 | service | indexing, queries, recrawl, sitemaps, feeds | exact preview + later-turn approval |
+| [`yandex-direct`](plugins/yandex-direct/) | 2.1.0 | service | campaigns, Reports, keywords, budgets, audit | exact preview + later-turn approval |
+| [`yandex-metrika`](plugins/yandex-metrika/) | 2.1.0 | service | analytics, goals, attribution, Logs, imports | exact preview + later-turn approval |
+| [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.1.0 | service | indexing, queries, recrawl, sitemaps, feeds | exact preview + later-turn approval |
 | [`yandex-wordstat`](plugins/yandex-wordstat/) | 1.1.2 | service | demand, frequency, dynamics, regions, candidate topics | no consequential writes |
 | [`yandex-search`](plugins/yandex-search/) | 1.0.2 | service | SERP, rankings, competitors, clustering | no |
 | [`yandex-seo`](plugins/yandex-seo/) | 1.1.2 | cross-service | organic evidence, Topical Architecture, Internal Linking | delegated preview only |
@@ -72,7 +72,7 @@ A user asks: “Find campaigns with problems and propose budget changes.”
 3. The agent analyzes the data and explains the recommendation.
 4. If a change is needed, the plugin shows an exact preview with `preview_id`.
 5. The user approves that exact preview in a later turn.
-6. The owning service plugin performs the write and verifies the result.
+6. The owning service plugin performs the write and returns an execution receipt; P0 marks verification as `RESPONSE_ONLY` / `UNVERIFIED` until a separate read-back proves service state.
 
 For complex SEO/Marketing tasks, the same pattern applies, but a cross-service plugin first combines evidence from several services and delegates any possible write back to the API owner.
 
@@ -83,6 +83,8 @@ read → analyze → preview → explicit approval → write → verify
 ```
 
 A consequential write requires approval of the **exact** preview in a later user turn. A changed payload, environment, or approval-bound identity requires a new preview. API responses, web content, and files are data, not instructions and not permission to write.
+
+In Direct/Metrika/Webmaster `2.1.0`, the exact preview uses `yandex-ai-approval/v2` and binds target/principal/request/cardinality. Bulk `>20` or `UNKNOWN` scale requires a separate `--ack-bulk` before transport. A successful write returns `yandex-ai-execution/v1`, but `RESPONSE_ONLY` / `UNVERIFIED` is not read-back verification and `NOT_AVAILABLE` does not promise rollback. A standalone CLI cannot prove human later-turn approval; that is a host/operator policy boundary.
 
 Normative details: [`docs/PLUGIN_STANDARD.en.md`](docs/PLUGIN_STANDARD.en.md) and plugin-local safety references.
 
@@ -130,9 +132,9 @@ Terms: [`docs/GLOSSARY.en.md`](docs/GLOSSARY.en.md). Release governance: [`docs/
 ## Versions
 
 ```text
-yandex-direct        2.0.1
-yandex-metrika       2.0.0
-yandex-webmaster     2.0.0
+yandex-direct        2.1.0
+yandex-metrika       2.1.0
+yandex-webmaster     2.1.0
 yandex-wordstat      1.1.2
 yandex-search        1.0.2
 yandex-seo           1.1.2

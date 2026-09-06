@@ -2,6 +2,15 @@
 
 [Русский](CHANGELOG.md) · [**English**](CHANGELOG.en.md)
 
+## [2.1.0] — 2026-09-05
+
+- Consequential Webmaster calls now use `yandex-ai-approval/v2`: API version, exact request/target, OAuth authenticated-principal binding, credential-safe feed URL representation, cardinality, and safety capability are bound into the approval digest.
+- Embedded URL Basic Auth credentials remain secret: approval uses OAuth-keyed/domain-separated HMAC material, so changing embedded credentials or the OAuth principal invalidates the preview without publishing a reusable password verifier.
+- Known single operations receive `KNOWN`, `items=1`; feed batch add/remove bind the exact `feeds`/`urls` length; opaque generic writes receive `UNKNOWN`.
+- Repository threshold `20` is internal safety policy, not a Yandex API limit. Batch `>20` and `UNKNOWN` execution require `--ack-bulk` after the exact `--approve <preview_id>` and are blocked before transport without it.
+- A successful write returns `yandex-ai-execution/v1`; P0 verification is `RESPONSE_ONLY` / `UNVERIFIED` and rollback is `NOT_AVAILABLE`, so an API response is not represented as read-back verification.
+- The standalone CLI does not prove later-turn human approval; the host/operator is responsible for obtaining a separate user approval after showing the exact preview.
+
 ## [2.0.0] — 2026-09-03
 
 - Breaking safety contract: consequential POST/PUT/PATCH/DELETE calls no longer execute based on `--execute` alone; after a separate later-turn user approval, the exact preview requires `--execute --approve <preview_id>`.
