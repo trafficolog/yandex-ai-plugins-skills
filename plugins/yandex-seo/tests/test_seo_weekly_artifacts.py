@@ -73,7 +73,7 @@ class WeeklyArtifactTests(unittest.TestCase):
     def test_extra_file_breaks_exact_snapshot_replay(self):
         with tempfile.TemporaryDirectory() as tmp:
             destination = Path(tmp) / "artifact-set"
-            report_bytes = b"{}"
+            report_bytes = b'{"schema":"seo-weekly-organic-report/v1"}'
             files = {"report.json": report_bytes}
             manifest = build_manifest(files, report_bytes=report_bytes, created_at="2026-09-06T12:30:00Z")
             publish_artifact_set(destination, files, manifest)
