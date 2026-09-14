@@ -9,13 +9,21 @@ Read `../../references/optimization.md`, `../../references/reporting.md`, and `.
 
 ## Sequence
 
-1. Confirm the business objective and target metric.
+1. Confirm the business objective and target metric, including the meaningful conversion goal(s) and economic constraint when relevant.
 2. Pull configuration plus enough recent data to understand volume, conversion delay, and placement/query mix.
 3. Diagnose before changing: measurement error, query mismatch, creative/landing mismatch, budget constraint, strategy constraint, or genuine low demand.
-4. Rank proposed actions by expected impact, confidence, reversibility, and blast radius.
-5. Preview exact changes and rollback criteria.
-6. Require explicit approval of the exact preview in a later user turn before any mutation.
-7. After change, record prior/new values and define a review window.
+4. Express each recommendation as **observation → hypothesis → verification → proposed action → effect metric**. Keep an observation separate from a possible cause until the verification step supports it.
+5. Rank proposed actions by expected impact, confidence, reversibility, and blast radius.
+6. For an experiment, define the baseline, observation window/data sufficiency, spend or risk envelope, **success criterion**, and **stop/revert criterion** before execution.
+7. Preview exact changes and rollback/stop criteria.
+8. Require explicit approval of the exact preview in a later user turn before any mutation.
+9. After change, record prior/new values and define the review window using the same goal and attribution basis.
+
+## Data sufficiency and experiments
+
+A before/after difference does not by itself prove causality: demand, auction pressure and neighboring campaigns may change at the same time. Prefer a contemporaneous comparable control when feasible; otherwise label causal confidence accordingly. Do not convert a low-volume outcome into a universal rule.
+
+Technical success and economic success are different. For example, a placement or strategy can become active without improving the account's business outcome. Report both when they differ.
 
 ## Avoid
 
