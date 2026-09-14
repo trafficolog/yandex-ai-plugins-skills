@@ -1,10 +1,46 @@
 {
   "schema_version": 1,
   "repository": {
-    "version": "1.4.0",
-    "tag": "1.4.0",
-    "title": "Repository 1.4.0",
-    "notes_file": ".github/releases/1.4.0.md"
+    "version": "1.5.0",
+    "tag": "1.5.0",
+    "title": "Repository 1.5.0",
+    "notes_file": ".github/releases/1.5.0.md"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "plugin": "yandex-direct",
+      "version": "2.2.0",
+      "tag": "yandex-direct-v2.2.0",
+      "title": "Yandex Direct 2.2.0",
+      "notes_file": ".github/releases/yandex-direct-2.2.0.md"
+    },
+    {
+      "plugin": "yandex-metrika",
+      "version": "2.2.0",
+      "tag": "yandex-metrika-v2.2.0",
+      "title": "Yandex Metrika 2.2.0",
+      "notes_file": ".github/releases/yandex-metrika-2.2.0.md"
+    },
+    {
+      "plugin": "yandex-search",
+      "version": "1.1.0",
+      "tag": "yandex-search-v1.1.0",
+      "title": "Yandex Search 1.1.0",
+      "notes_file": ".github/releases/yandex-search-1.1.0.md"
+    },
+    {
+      "plugin": "yandex-webmaster",
+      "version": "2.2.0",
+      "tag": "yandex-webmaster-v2.2.0",
+      "title": "Yandex Webmaster 2.2.0",
+      "notes_file": ".github/releases/yandex-webmaster-2.2.0.md"
+    },
+    {
+      "plugin": "yandex-wordstat",
+      "version": "1.2.0",
+      "tag": "yandex-wordstat-v1.2.0",
+      "title": "Yandex Wordstat 1.2.0",
+      "notes_file": ".github/releases/yandex-wordstat-1.2.0.md"
+    }
+  ]
 }
