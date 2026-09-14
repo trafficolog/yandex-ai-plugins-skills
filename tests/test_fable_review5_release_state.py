@@ -4,9 +4,9 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
-    "yandex-direct": ("yandex-direct-suite", "2.1.0"),
-    "yandex-metrika": ("yandex-metrika", "2.1.0"),
-    "yandex-webmaster": ("yandex-webmaster", "2.1.0"),
+    "yandex-direct": ("yandex-direct-suite", "2.2.0"),
+    "yandex-metrika": ("yandex-metrika", "2.2.0"),
+    "yandex-webmaster": ("yandex-webmaster", "2.2.0"),
 }
 
 
