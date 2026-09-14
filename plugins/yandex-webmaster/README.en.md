@@ -2,7 +2,13 @@
 
 [Русский](README.md) · [**English**](README.en.md)
 
-Version `2.1.0`. Service plugin for hosts, diagnostics, search queries, indexing, recrawl, sitemaps, links, feeds, archive/PRO exports and raw API workflows.
+Version `2.2.0`. Service plugin for hosts, diagnostics, search queries, indexing, recrawl, sitemaps, links, feeds, archive/PRO exports and raw API workflows.
+
+## Practitioner workflow 2.2.0
+
+Diagnosis starts from a fresh summary for the intended host and only then drills into the concrete problem. Diagnostics, quota, and task status are treated as volatile data: re-read them before a decision that depends on them instead of relying on an old snapshot.
+
+Recrawl is a targeted action, not a universal answer to a ranking drop. Before queueing a URL, identify the concrete fixed/changed URL and evidence that a new crawl is useful; blanket recrawl of the whole site is not used as a pseudo-fix. Even after confirmed submission, recrawl is not presented as a guarantee of indexing or ranking.
 
 ## Migration 1.x → 2.0.0
 
