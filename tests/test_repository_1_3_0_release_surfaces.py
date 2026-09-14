@@ -1,19 +1,8 @@
-import json
 from pathlib import Path
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-EXPECTED_PLUGIN_VERSIONS = {
-    "yandex-direct-suite": "2.1.0",
-    "yandex-metrika": "2.1.0",
-    "yandex-webmaster": "2.1.0",
-    "yandex-wordstat": "1.1.2",
-    "yandex-search": "1.0.2",
-    "yandex-seo": "1.2.0",
-    "yandex-marketing": "1.1.0",
-}
 
 
 class Repository130HistoricalReleaseTests(unittest.TestCase):
@@ -47,11 +36,18 @@ class Repository130HistoricalReleaseTests(unittest.TestCase):
             self.assertIn("## [1.2.0]", text)
             self.assertIn("Weekly Organic Report", text)
 
-    def test_plugin_versions_after_1_3_0_remain_the_same_until_explicit_plugin_release(self):
-        agents = json.loads((ROOT / ".agents/plugins/marketplace.json").read_text(encoding="utf-8"))
-        claude = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
-        self.assertEqual({row["name"]: row["version"] for row in agents["plugins"]}, EXPECTED_PLUGIN_VERSIONS)
-        self.assertEqual({row["name"]: row["version"] for row in claude["plugins"]}, EXPECTED_PLUGIN_VERSIONS)
+    def test_repository_1_3_0_notes_preserve_then_current_plugin_matrix(self):
+        notes = (ROOT / ".github/releases/1.3.0.md").read_text(encoding="utf-8")
+        for token in (
+            "Direct `2.1.0`",
+            "Metrika `2.1.0`",
+            "Webmaster `2.1.0`",
+            "Wordstat `1.1.2`",
+            "Search `1.0.2`",
+            "SEO `1.2.0`",
+            "Marketing `1.1.0`",
+        ):
+            self.assertIn(token, notes)
 
 
 if __name__ == "__main__":
