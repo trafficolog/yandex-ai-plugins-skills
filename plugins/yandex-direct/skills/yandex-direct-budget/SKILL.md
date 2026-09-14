@@ -9,15 +9,19 @@ Read `../../references/reporting.md` and `../../references/safety.md`.
 
 ## Establish economics
 
-Use the user's actual monthly/weekly budget, target CPA/CPO or target ROAS/DRR, conversion value/margin if relevant, and account currency. Do not invent a target.
+Use the user's actual monthly/weekly budget, target CPA/CPO or target ROAS/DRR, conversion value/margin if relevant, meaningful business conversion goal(s), and account currency. Do not invent a target or treat a technical/micro goal as the business outcome without confirmation.
 
 ## Pace
 
 Compare actual spend to expected spend by elapsed eligible time, considering campaign schedule and start date. A simple linear pace is acceptable only when the user has no seasonality or day-of-week model; label it as such.
 
+Distinguish budget-limited from demand-limited delivery. An underspend does not automatically mean the budget should be increased or that targeting is broken; first check available demand, serving/strategy state and data sufficiency.
+
 ## Allocation
 
-Recommend reallocation only after considering conversion volume, delay, marginal efficiency, strategic importance, and whether a campaign is budget-limited versus demand-limited. Avoid moving budget solely from low CPA to high CPA when the low-CPA campaign cannot absorb incremental spend.
+Recommend reallocation only after considering conversion volume, conversion delay, marginal efficiency, strategic importance, and whether a campaign is budget-limited versus demand-limited. Avoid moving budget solely from low CPA to high CPA when the low-CPA campaign cannot absorb incremental spend.
+
+For a budget experiment, define the baseline, change size, observation window, success metric and spend/stop criterion before writing. Evaluate on the same goal and attribution basis used for the decision.
 
 Any budget or strategy write requires an exact preview and later-turn approval.
 
