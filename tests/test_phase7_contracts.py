@@ -55,7 +55,7 @@ class Phase7ContractTests(unittest.TestCase):
             self.assertIn("METHODOLOGY", text)
             self.assertIn("transport", text.lower())
 
-    def test_root_readmes_explain_phase7_pipeline_and_versions(self):
+    def test_root_readmes_explain_phase7_pipeline_without_freezing_current_semver(self):
         for rel in ["README.md", "README.en.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("Wordstat", text)
@@ -63,8 +63,6 @@ class Phase7ContractTests(unittest.TestCase):
             self.assertIn("Topical Architecture", text)
             self.assertIn("Internal Linking", text)
             self.assertIn("SERP", text)
-            self.assertIn("yandex-wordstat      1.1.2", text)
-            self.assertIn("yandex-seo           1.2.0", text)
 
 
 if __name__ == "__main__":
