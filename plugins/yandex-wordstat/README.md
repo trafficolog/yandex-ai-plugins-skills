@@ -2,9 +2,15 @@
 
 [**Русский**](README.md) · [English](README.en.md)
 
-Версия `1.1.2`. Workflow-first service plugin для demand research через Wordstat API в составе Yandex Search API v2: GetTop, GetDynamics, GetRegionsDistribution, GetRegionsTree, а также evidence-first candidate topic maps.
+Версия `1.2.0`. Workflow-first service plugin для demand research через Wordstat API в составе Yandex Search API v2: GetTop, GetDynamics, GetRegionsDistribution, GetRegionsTree, evidence-first candidate topic maps и practitioner-informed intent/missed-demand analysis.
 
 > Phase 7 `1.1.0` добавил `yandex-wordstat-topic-map` и `wordstat-topic-map/v1`; patch `1.1.1` усиливает provenance: duplicate seed identifiers и candidate self-relations отклоняются, ownership финального SERP clustering и page architecture не меняется.
+
+## Practitioner workflow 1.2.0
+
+Перед расширением семантики явно зафиксируйте регион и то, что бизнес действительно продаёт/предлагает. `results` используются как основной источник расширения вокруг seed, а более шумные `associations` — как candidate discovery, не как готовый спрос.
+
+Кандидаты классифицируются как `TARGET`, `ADJACENT`, `INFORMATIONAL`, `NAVIGATIONAL` или `AMBIGUOUS`. Для high-value и неоднозначных кластеров проверяйте intent через Yandex Search evidence; нет необходимости делать дорогую Search-проверку каждой строки большого массива. Отдельный missed-demand workflow сравнивает релевантный Wordstat demand с уже покрытой семантикой Direct, не суммируя перекрывающиеся phrase counts в фиктивный market size.
 
 ## Capability matrix
 
@@ -16,6 +22,7 @@
 | Regional distribution / region tree | yes | no | optional | yes | yes |
 | Trend classification | yes | no | optional | yes | yes |
 | Candidate demand/topic map | yes | no | optional | yes | yes |
+| Intent / missed-demand research | yes | no | optional | yes | yes |
 | Quota / cost planning | yes | no | optional | yes | yes |
 
 ## Topic Map: граница ответственности
