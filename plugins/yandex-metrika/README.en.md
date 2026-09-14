@@ -2,7 +2,13 @@
 
 [Русский](README.md) · [**English**](README.en.md)
 
-Version `2.1.0`. Service plugin for Yandex Metrika reporting, conversions, ecommerce, attribution, goals, Logs API, imports and low-level Management API workflows.
+Version `2.2.0`. Service plugin for Yandex Metrika reporting, conversions, ecommerce, attribution, goals, Logs API, imports and low-level Management API workflows.
+
+## Practitioner workflow 2.2.0
+
+Analysis starts from the business objective: record final business conversions separately from diagnostic micro-events. Compare periods only on the same basis — metric/dimension set, filters, attribution context, and data sufficiency must be compatible.
+
+Rows with zero conversions remain in the analysis and denominators. PnL/ROAS conclusions are allowed only when spend and revenue refer to a compatible object/period with sufficient provenance; `clicks`, `visits`, goal reaches, and transactions are not interchangeable. Observed correlation is not presented as causality without additional evidence.
 
 ## Migration 1.x → 2.0.0
 
