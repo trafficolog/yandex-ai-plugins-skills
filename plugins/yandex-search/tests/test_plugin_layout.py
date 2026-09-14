@@ -13,7 +13,7 @@ class TestPluginLayout(unittest.TestCase):
     def test_codex_manifest_contract(self):
         data = json.loads((ROOT / '.codex-plugin/plugin.json').read_text(encoding='utf-8'))
         self.assertEqual(data['name'], 'yandex-search')
-        self.assertEqual(data['version'], '1.0.2')
+        self.assertEqual(data['version'], '1.1.0')
         self.assertEqual(data['skills'], './skills/')
     def test_exact_skill_set_exists(self):
         self.assertEqual({p.parent.name for p in (ROOT / 'skills').glob('*/SKILL.md')}, EXPECTED_SKILLS)
