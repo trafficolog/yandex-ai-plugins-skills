@@ -44,7 +44,7 @@ class Repository130HistoricalReleaseTests(unittest.TestCase):
             "Webmaster `2.1.0`",
             "Wordstat `1.1.2`",
             "Search `1.0.2`",
-            "SEO `1.2.0`",
+            "Yandex SEO: `1.2.0`",
             "Marketing `1.1.0`",
         ):
             self.assertIn(token, notes)
