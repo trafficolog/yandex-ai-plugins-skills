@@ -2,15 +2,22 @@
 
 [Русский](README.md) · [**English**](README.en.md)
 
-Version `1.0.2`. SEO-first service plugin for classic web SERP retrieval, snapshots, rankings, competitor presence, URL-overlap clustering and sync/deferred Search API v2 workflows.
+Version `1.1.0`. SEO-first service plugin for classic web SERP retrieval, snapshots, rankings, competitor presence, URL-overlap clustering, sync/deferred Search API v2 workflows, and bounded semantic research through smart snippets / info context.
 
 > `DOCS 1.0.0` changes documentation only.
+
+## Smart snippets / info context 1.1.0
+
+For small interactive page-meaning research, a synchronous request may set `metadata.fields["x-genesis-info-context"]="on"` with `search_type=SEARCH_TYPE_RU`. That mode returns JSON and is normalized separately from ordinary XML SERP into `rank`, `url`, `domain`, `title`, `snippet`, and `extract`.
+
+The mode is optional: ordinary sync/deferred SERP remains the default for rankings, large collections, snapshots, and clustering. A conservative practitioner/repository guard keeps smart-snippet research to a small result set; it is not presented as a general official Search API limit.
 
 ## Capability matrix
 
 | Capability | Read | Write | MCP/App | Bundled API | File fallback |
 |---|---:|---:|---:|---:|---:|
 | Interactive web SERP retrieval | yes | no | optional | yes | yes |
+| Bounded smart snippets / info context | yes | no | optional | yes | yes |
 | Deferred / batch search | yes | no | optional | yes | yes |
 | SERP snapshot normalization | yes | no | optional | yes | yes |
 | Absolute rank / snapshot comparison | yes | no | optional | yes | yes |
