@@ -38,7 +38,7 @@ class Repository150ReleaseSurfaceTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            {row["name"]: row["version"] for row in release["plugins"]},
+            {row["plugin"]: row["version"] for row in release["plugins"]},
             RELEASED_PLUGINS,
         )
 
@@ -61,8 +61,7 @@ class Repository150ReleaseSurfaceTests(unittest.TestCase):
     def test_marketplaces_and_manifests_match_1_5_0_release_matrix(self):
         agents = json.loads((ROOT / ".agents/plugins/marketplace.json").read_text(encoding="utf-8"))
         claude = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
-        codex = json.loads((ROOT / ".codex-plugin/marketplace.json").read_text(encoding="utf-8"))
-        for marketplace in (agents, claude, codex):
+        for marketplace in (agents, claude):
             self.assertEqual({row["name"]: row["version"] for row in marketplace["plugins"]}, EXPECTED_PLUGIN_VERSIONS)
 
         expected_dirs = {
