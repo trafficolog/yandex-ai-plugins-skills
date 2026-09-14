@@ -2,6 +2,13 @@
 
 [**Русский**](CHANGELOG.md) · [English](CHANGELOG.en.md)
 
+## [2.2.0] — 2026-09-14
+
+- Reporting/conversion workflow теперь начинает анализ с явной бизнес-цели и отделяет конечные бизнес-конверсии от диагностических микрособытий.
+- Period comparisons требуют совместимых metrics/dimensions, filters и attribution context; observed correlation не объявляется причинностью без дополнительного evidence.
+- Нулевые конверсии сохраняются в строках и знаменателях, а `clicks`, `visits`, goal reaches и transactions не подменяют друг друга.
+- PnL/ROAS рекомендации допускаются только при совместимом spend/revenue provenance; существующие quality metadata и exact-preview/write-safety contracts сохранены.
+
 ## [2.1.0] — 2026-09-05
 
 - Consequential Metrika operations переведены на `yandex-ai-approval/v2` с authenticated-principal binding, exact target/request, cardinality и safety capability.
