@@ -2,11 +2,17 @@
 
 [Русский](README.md) · [**English**](README.en.md)
 
-Version `2.1.0`. Service plugin for Yandex Direct campaigns, Reports API, audits, keywords/negatives, budgets, optimization and low-level API workflows.
+Version `2.2.0`. Service plugin for Yandex Direct campaigns, Reports API, audits, keywords/negatives, budgets, optimization and low-level API workflows.
 
 ## Execution model
 
 Preference: compatible connected MCP/app → bundled Python helper → export/file fallback. Consequential changes follow `read → analyze → preview → explicit approval → write → verify`.
+
+### Practitioner workflow 2.2.0
+
+The practical layer now starts from the business objective, correct analysis object, and comparable data basis rather than a universal KPI threshold. Optimization follows `observation → hypothesis → check → action → effect criterion`, with success/stop/revert criteria defined before the experiment.
+
+`RARELY_SERVED`, low volume, or one weak KPI is not an instruction to delete a keyword. First separate commercial intent from noise, verify comparable period/attribution context, and consider consolidating compatible low-volume demand. Applying negative keywords, bids, or budgets still requires an exact preview and separate later-turn approval.
 
 ### Migration 1.x → 2.0.0
 
