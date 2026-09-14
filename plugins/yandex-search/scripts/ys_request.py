@@ -26,6 +26,8 @@ FIX_TYPO_MODES = {"FIX_TYPO_MODE_ON", "FIX_TYPO_MODE_OFF"}
 RESPONSE_FORMATS = {"FORMAT_XML", "FORMAT_HTML"}
 GROUP_MODES = {"GROUP_MODE_FLAT", "GROUP_MODE_DEEP"}
 MAX_RESULTS = 250
+SMART_SNIPPETS_MAX_RESULTS = 20
+SMART_SNIPPETS_METADATA_KEY = "x-genesis-info-context"
 
 
 def build_search_request(
@@ -48,6 +50,7 @@ def build_search_request(
     docs_in_group: int = 1,
     user_agent: str | None = None,
     localization: str | None = None,
+    smart_snippets: bool = False,
 ) -> dict[str, Any]:
     query_text = validate_query_text(query)
     folder = (folder_id or "").strip()
@@ -82,6 +85,17 @@ def build_search_request(
     if window_end > MAX_RESULTS:
         raise ValueError(f"requested result window crosses the {MAX_RESULTS}-result API ceiling")
 
+    if smart_snippets:
+        if mode != "sync":
+            raise ValueError("smart snippets are supported only in sync mode")
+        if search_type != "SEARCH_TYPE_RU":
+            raise ValueError("smart snippets require SEARCH_TYPE_RU")
+        if requested_per_page > SMART_SNIPPETS_MAX_RESULTS:
+            raise ValueError(
+                "smart snippets are conservatively limited to 20 documents "
+                "based on pinned practitioner live evidence"
+            )
+
     body: dict[str, Any] = {
         "query": {
             "searchType": search_type,
@@ -107,6 +121,8 @@ def build_search_request(
         body["userAgent"] = user_agent
     if localization:
         body["l10n"] = localization
+    if smart_snippets:
+        body["metadata"] = {"fields": {SMART_SNIPPETS_METADATA_KEY: "on"}}
 
     headers = auth_headers(api_key=api_key, iam_token=iam_token)
     url = SYNC_URL if mode == "sync" else ASYNC_URL

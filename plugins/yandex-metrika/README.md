@@ -2,7 +2,13 @@
 
 [**Русский**](README.md) · [English](README.en.md)
 
-Версия `2.1.0`. Service plugin для аналитики Яндекс Метрики: reporting, conversions, ecommerce, attribution, goals, Logs API, imports и low-level Management API.
+Версия `2.2.0`. Service plugin для аналитики Яндекс Метрики: reporting, conversions, ecommerce, attribution, goals, Logs API, imports и low-level Management API.
+
+## Practitioner workflow 2.2.0
+
+Анализ начинается с бизнес-цели: отдельно фиксируйте конечные бизнес-конверсии и диагностические микрособытия. Сравнивайте периоды только на одинаковой базе — metric/dimension set, фильтры, attribution context и достаточность данных должны быть сопоставимы.
+
+Строки с нулём конверсий сохраняются в анализе и знаменателях. PnL/ROAS выводы допустимы только когда расход и выручка относятся к совместимому объекту/периоду и имеют достаточный provenance; `clicks`, `visits`, goal reaches и transactions не подменяют друг друга. Наблюдаемую корреляцию не объявляйте причинностью без дополнительной проверки.
 
 ## Migration 1.x → 2.0.0
 

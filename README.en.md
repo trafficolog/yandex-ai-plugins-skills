@@ -2,7 +2,7 @@
 
 <p align="center"><a href="README.md">Русский</a> · <strong>English</strong></p>
 
-<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.4.0-3155ff"></p>
+<p align="center"><img alt="license MIT" src="https://img.shields.io/badge/license-MIT-white"> <img alt="plugins 7" src="https://img.shields.io/badge/plugins-7-3155ff"> <img alt="independent semver" src="https://img.shields.io/badge/semver-independent-3155ff"> <img alt="release" src="https://img.shields.io/badge/release-1.5.0-3155ff"></p>
 
 # Yandex AI Plugins
 
@@ -10,7 +10,7 @@ A marketplace of independent AI plugins **for Yandex services**: Direct, Metrika
 
 The plugins give AI agents specialized skills, access to the relevant service data, and shared rules for safe operation. This is not a plugin set for YandexGPT: each plugin owns a specific domain and operates inside explicit access boundaries.
 
-The current published repository version is `1.4.0`. Plugin versions evolve independently. Published release tags are never retargeted to newer commits. Releases created after immutable-release enforcement remain `immutable`; earlier releases remain in their original historical state.
+The current published repository version is `1.5.0`. Plugin versions evolve independently. Published release tags are never retargeted to newer commits. Releases created after immutable-release enforcement remain `immutable`; earlier releases remain in their original historical state.
 
 ## What this is and who it is for
 
@@ -31,11 +31,11 @@ You do not need to install the whole marketplace. Connect only the plugins requi
 
 | Plugin | Version | Type | Main use | Data changes |
 |---|---:|---|---|---|
-| [`yandex-direct`](plugins/yandex-direct/) | 2.1.0 | service | campaigns, reports, keywords, budgets, audit | only after exact preview and separate approval |
-| [`yandex-metrika`](plugins/yandex-metrika/) | 2.1.0 | service | analytics, goals, attribution, Logs API, imports | only after exact preview and separate approval |
-| [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.1.0 | service | indexing, queries, recrawl, sitemaps, feeds | only after exact preview and separate approval |
-| [`yandex-wordstat`](plugins/yandex-wordstat/) | 1.1.2 | service | demand, frequency, dynamics, regions, topics | no consequential writes |
-| [`yandex-search`](plugins/yandex-search/) | 1.0.2 | service | SERP, rankings, competitors, clustering | none |
+| [`yandex-direct`](plugins/yandex-direct/) | 2.2.0 | service | campaigns, reports, keywords, budgets, audit | only after exact preview and separate approval |
+| [`yandex-metrika`](plugins/yandex-metrika/) | 2.2.0 | service | analytics, goals, attribution, Logs API, imports | only after exact preview and separate approval |
+| [`yandex-webmaster`](plugins/yandex-webmaster/) | 2.2.0 | service | indexing, queries, recrawl, sitemaps, feeds | only after exact preview and separate approval |
+| [`yandex-wordstat`](plugins/yandex-wordstat/) | 1.2.0 | service | demand, frequency, dynamics, regions, topics | no consequential writes |
+| [`yandex-search`](plugins/yandex-search/) | 1.1.0 | service | SERP, rankings, competitors, clustering | none |
 | [`yandex-seo`](plugins/yandex-seo/) | 1.2.0 | cross-service | organic evidence, topical architecture, internal linking, weekly report | proposes actions and delegates writes to service plugins |
 | [`yandex-marketing`](plugins/yandex-marketing/) | 1.1.0 | cross-service | paid acquisition, reconciliation, opportunity analysis | proposes actions and delegates writes to service plugins |
 
@@ -58,6 +58,18 @@ Large or unknown operation sizes require the additional `--ack-bulk` gate. Succe
 A successful API response does not by itself prove that service state was independently read back. The current verification capability is therefore represented truthfully as `RESPONSE_ONLY` / `UNVERIFIED`, while unavailable rollback is represented as `NOT_AVAILABLE`.
 
 Normative contract: [`docs/PLUGIN_STANDARD.en.md`](docs/PLUGIN_STANDARD.en.md).
+
+### Practical workflows
+
+Release `1.5.0` strengthens five service plugins with patterns taken from regularly used practitioner workflows: establish the business objective and correct analysis object before metrics, compare like with like, separate observations from hypotheses, and give each action an explicit success or stop criterion.
+
+- Direct does not turn low-volume demand or `RARELY_SERVED` into an automatic instruction to delete a keyword;
+- Metrika separates micro-events from business conversions and keeps zero-conversion rows in the denominator;
+- Search uses smart snippets / info context only for bounded semantic research while keeping ordinary SERP collection as the default mode;
+- Webmaster requires fresh evidence before recrawl and does not use blanket recrawl as a pseudo-fix for ranking drops;
+- Wordstat checks region, commercial meaning, and ambiguous intent before turning demand observations into recommendations.
+
+The practitioner source is pinned to an exact commit SHA in the release notes. External practice supplements but does not replace official Yandex API contracts or the repository exact-preview safety gates.
 
 ### Project memory
 
@@ -211,11 +223,11 @@ Terms and exact technical identifiers: [`docs/GLOSSARY.en.md`](docs/GLOSSARY.en.
 ## Versions
 
 ```text
-yandex-direct        2.1.0
-yandex-metrika       2.1.0
-yandex-webmaster     2.1.0
-yandex-wordstat      1.1.2
-yandex-search        1.0.2
+yandex-direct        2.2.0
+yandex-metrika       2.2.0
+yandex-webmaster     2.2.0
+yandex-wordstat      1.2.0
+yandex-search        1.1.0
 yandex-seo           1.2.0
 yandex-marketing     1.1.0
 ```

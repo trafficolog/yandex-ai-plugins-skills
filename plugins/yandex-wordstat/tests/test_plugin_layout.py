@@ -21,7 +21,7 @@ class TestPluginLayout(unittest.TestCase):
     def test_codex_manifest_contract(self):
         data = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
         self.assertEqual(data["name"], "yandex-wordstat")
-        self.assertEqual(data["version"], "1.1.2")
+        self.assertEqual(data["version"], "1.2.0")
         self.assertEqual(data["skills"], "./skills/")
 
     def test_exact_skill_set_exists(self):

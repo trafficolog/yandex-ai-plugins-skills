@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import subprocess
@@ -113,6 +113,16 @@ class ProjectMemoryBaselineTests(unittest.TestCase):
                 cwd=ROOT, text=True, capture_output=True, check=False,
             )
             self.assertEqual(init.returncode, 0, init.stderr)
+
+            # Anchor all baseline/check timestamps to the runtime clock after init.
+            # The old fixture used September 2026 literals, so once real time moved
+            # past those dates `project.created_at` appeared to be in the future
+            # relative to `check --at`, failing for an unrelated reason.
+            anchor = datetime.now(timezone.utc).replace(microsecond=0)
+            captured = anchor - timedelta(days=2)
+            fresh_until = anchor - timedelta(days=1)
+            to_rfc3339 = lambda value: value.isoformat().replace("+00:00", "Z")
+
             data_path = root / "baseline-data.json"
             data_path.write_text(json.dumps({"clicks": 10}), encoding="utf-8")
             added = subprocess.run(
@@ -121,19 +131,21 @@ class ProjectMemoryBaselineTests(unittest.TestCase):
                     "--root", str(root),
                     "--baseline-id", "baseline-1",
                     "--kind", "organic-summary",
-                    "--captured-at", "2026-09-06T07:30:00Z",
-                    "--fresh-until", "2026-09-06T08:00:00Z",
+                    "--captured-at", to_rfc3339(captured),
+                    "--fresh-until", to_rfc3339(fresh_until),
                     "--source", "yandex-webmaster",
                     "--input", str(data_path),
                 ],
                 cwd=ROOT, text=True, capture_output=True, check=False,
             )
             self.assertEqual(added.returncode, 0, added.stderr)
-            snapshot = root / ".yandex-ai" / "baselines" / "organic-summary" / "2026-09-06T073000Z--organic-summary.json"
+            snapshot = root / ".yandex-ai" / "baselines" / "organic-summary" / (
+                captured.strftime("%Y-%m-%dT%H%M%SZ") + "--organic-summary.json"
+            )
             self.assertTrue(snapshot.is_file())
 
             checked = subprocess.run(
-                [sys.executable, str(CLI), "check", "--root", str(root), "--at", "2026-09-07T08:00:01Z", "--json"],
+                [sys.executable, str(CLI), "check", "--root", str(root), "--at", to_rfc3339(anchor), "--json"],
                 cwd=ROOT, text=True, capture_output=True, check=False,
             )
             self.assertEqual(checked.returncode, 0, checked.stderr)

@@ -2,6 +2,13 @@
 
 [Русский](CHANGELOG.md) · [**English**](CHANGELOG.en.md)
 
+## [2.2.0] — 2026-09-14
+
+- Added a practitioner-informed decision loop: establish the business objective and comparable basis before KPI conclusions, then use `observation → hypothesis → check → action → effect criterion`.
+- `RARELY_SERVED`, low volume, and a single weak KPI are no longer treated as standalone instructions to delete a keyword; intent, observation sufficiency, and compatible low-volume consolidation are checked first.
+- Reporting/optimization guidance requires explicit period and attribution context and recomputes rates from source totals instead of averaging CPA/CTR values.
+- Experiments define success/stop/revert criteria before a consequential write; the existing `yandex-ai-approval/v2`, `--ack-bulk`, and `yandex-ai-execution/v1` contracts are unchanged.
+
 ## [2.1.0] — 2026-09-05
 
 - Consequential Direct writes now use `yandex-ai-approval/v2`: exact service/method/environment/body, `Client-Login`, authenticated-principal binding, cardinality, and safety capability are bound into one approval digest.

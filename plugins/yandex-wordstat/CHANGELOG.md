@@ -2,6 +2,14 @@
 
 [**Русский**](CHANGELOG.md) · [English](CHANGELOG.en.md)
 
+## [1.2.0] — 2026-09-14
+
+- Demand research теперь фиксирует регион и фактический бизнес-offer до semantic expansion; `results` и более шумные `associations` получают разные роли.
+- Добавлена practitioner intent-классификация `TARGET` / `ADJACENT` / `INFORMATIONAL` / `NAVIGATIONAL` / `AMBIGUOUS`; high-value и ambiguous clusters маршрутизируются в Search evidence verification.
+- Search validation применяется выборочно к важным/неоднозначным кластерам, а не механически к каждой строке большого semantic set.
+- Добавлен missed-demand workflow относительно текущей Direct semantics; overlap/no-sum contract сохраняется, поэтому phrase counts не превращаются в выдуманный total market demand.
+- Candidate-only boundary Phase 7 сохранён: Wordstat не доказывает final SERP clusters или page boundaries.
+
 ## [1.1.2] — 2026-09-03
 
 - `wordstat-topic-map/v1` теперь нормализует query text через Unicode NFKC + casefold + whitespace folding, совпадая с conservative cross-service query joining в SEO.

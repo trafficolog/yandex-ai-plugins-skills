@@ -4,15 +4,15 @@
 
 Status reflects what this repository actually ships, not upstream product availability. Production plugins use independent SemVer.
 
-> **Repository 1.3.0 release state:** Yandex SEO advances to `1.2.0` with the transport-free Weekly Organic Report, `seo-weekly-organic-report/v1`, immutable `yandex-ai-artifact-manifest/v1`, and self-contained HTML. All other production plugins keep their published versions.
+> **Repository 1.5.0 release state:** Direct `2.2.0`, Metrika `2.2.0`, Webmaster `2.2.0`, Wordstat `1.2.0`, and Search `1.1.0` receive practitioner-informed workflow hardening. SEO `1.2.0` and Marketing `1.1.0` keep their current SemVer. Exact-preview/write-safety contracts are not weakened.
 
 | Service plugin | Tier | Status | Version | Primary scope | Execution sources to evaluate |
 |---|---:|---|---|---|---|
-| Yandex Direct | 1 | **available** | 2.1.0 | campaigns, audit, reports, optimization, keywords, budget; approval v2; bulk/unknown `--ack-bulk`; execution receipts | bundled API helper; future MCP/app adapter |
-| Yandex Metrika | 1 | **available** | 2.1.0 | reporting, conversions, ecommerce, attribution, goals, Logs API, imports; approval v2; Management unknown-scale guard; single-operation Logs/import receipts | bundled API helpers; optional MCP/app backend |
-| Yandex Webmaster | 1 | **available** | 2.1.0 | indexing, diagnostics, queries, sitemaps, recrawl, links, feeds, exports; approval v2; descriptor/batch cardinality; execution receipts | bundled API helpers; optional MCP/app backend |
-| Yandex Wordstat | 1 | **available** | 1.1.2 | demand, frequency, semantics, dynamics, regions, trends; candidate topic maps; 20-association cap; unambiguous seed/topic relation provenance | bundled Wordstat API within Yandex Search API v2 helpers; optional MCP/app backend |
-| Yandex Search | 1 | **available** | 1.0.2 | web SERP, batch, rankings, competitors, URL-overlap clustering; 250-result depth | bundled Search API v2 helpers; optional MCP/app backend |
+| Yandex Direct | 1 | **available** | 2.2.0 | campaigns, audit, reports, optimization, keywords, budget; business-goal/comparability checks; rare-demand handling; approval v2; bulk/unknown `--ack-bulk`; execution receipts | bundled API helper; future MCP/app adapter |
+| Yandex Metrika | 1 | **available** | 2.2.0 | reporting, conversions, ecommerce, attribution, goals, Logs API, imports; business-vs-micro conversion framing; comparable-basis/PnL guards; approval v2; Management unknown-scale guard; single-operation Logs/import receipts | bundled API helpers; optional MCP/app backend |
+| Yandex Webmaster | 1 | **available** | 2.2.0 | indexing, diagnostics, queries, sitemaps, recrawl, links, feeds, exports; fresh-evidence/recrawl triage; approval v2; descriptor/batch cardinality; execution receipts | bundled API helpers; optional MCP/app backend |
+| Yandex Wordstat | 1 | **available** | 1.2.0 | demand, frequency, semantics, dynamics, regions, trends; candidate topic maps; region/business-fit/intent checks; missed-demand discovery; 20-association cap; unambiguous seed/topic relation provenance | bundled Wordstat API within Yandex Search API v2 helpers; optional MCP/app backend |
+| Yandex Search | 1 | **available** | 1.1.0 | web SERP, batch, rankings, competitors, URL-overlap clustering; bounded optional smart snippets/info context for semantic research; 250-result depth for ordinary SERP collection | bundled Search API v2 helpers; optional MCP/app backend |
 | Yandex SEO | X | **available** | 1.2.0 | cross-service demand, visibility, performance, gaps, cannibalization, topical architecture, internal-link planning, Weekly Organic Report, immutable artifacts, prioritization | pure-data orchestration over Wordstat + Search + Webmaster + Metrika |
 | Yandex Marketing | X | **available** | 1.1.0 | paid performance, KPI reconciliation, evidence roles, demand/query intelligence, landing/budget opportunities | pure-data orchestration over Direct + Metrika + Wordstat with optional Search context |
 | Yandex Tracker | 2 | backlog | — | issues, queues, permissions, worklogs, boards | official API first |
@@ -48,7 +48,7 @@ SEO: yandex-seo-internal-linking
 Ownership contract:
 
 - **Wordstat** collects demand evidence and candidate topics; Wordstat associations/co-occurrence do not prove final page boundaries. Patch `1.1.1` also rejects duplicate seed identifiers and candidate self-relations.
-- **Search** remains the sole owner of SERP-overlap clustering. Phase 7 does not add a competing fuzzy-text clusterer in Wordstat or SEO and does not change Search `1.0.2`.
+- **Search** remains the sole owner of SERP-overlap clustering. Phase 7 does not add a competing fuzzy-text clusterer in Wordstat or SEO; historically Phase 7 shipped with Search `1.0.2`.
 - **SEO Topical Architecture** consumes Search-owned clusters plus optional Webmaster/Metrika/site-inventory evidence and validates page decisions, `structural_tree`, and `semantic_graph`. Patch `1.1.1` whitelist-normalizes structural nodes and prevents execution-state leakage.
 - **Internal Linking** produces/audits preview artifacts only; it performs no CMS writes. Candidate-link `evidence` is list-typed.
 - `OBSERVED`, `DERIVED`, `HYPOTHESIS`, and `METHODOLOGY` remain distinct. Methodology from semantic-cocoon/TGA/QBST material is not promoted to a ranking fact without independent authoritative evidence.

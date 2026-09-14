@@ -2,6 +2,13 @@
 
 [Русский](CHANGELOG.md) · [**English**](CHANGELOG.en.md)
 
+## [2.2.0] — 2026-09-14
+
+- Reporting/conversion workflows now start from an explicit business objective and separate final business conversions from diagnostic micro-events.
+- Period comparisons require compatible metrics/dimensions, filters, and attribution context; observed correlation is not presented as causality without additional evidence.
+- Zero-conversion rows stay in the data and denominators, while `clicks`, `visits`, goal reaches, and transactions are not treated as interchangeable.
+- PnL/ROAS recommendations are allowed only with compatible spend/revenue provenance; existing quality metadata and exact-preview/write-safety contracts are preserved.
+
 ## [2.1.0] — 2026-09-05
 
 - Consequential Metrika operations now use `yandex-ai-approval/v2` with authenticated-principal binding, exact target/request, cardinality, and safety capability.

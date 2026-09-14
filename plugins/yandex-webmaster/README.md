@@ -2,7 +2,13 @@
 
 [**Русский**](README.md) · [English](README.en.md)
 
-Версия `2.1.0`. Service plugin для technical/search visibility: hosts, diagnostics, search queries, indexing, recrawl, sitemaps, links, feeds, archive/PRO exports и raw API workflows.
+Версия `2.2.0`. Service plugin для technical/search visibility: hosts, diagnostics, search queries, indexing, recrawl, sitemaps, links, feeds, archive/PRO exports и raw API workflows.
+
+## Practitioner workflow 2.2.0
+
+Диагностика начинается со свежей сводки нужного host и только затем углубляется в конкретную проблему. Diagnostics, quota и task status считаются изменчивыми данными: перед решением, зависящим от них, их нужно перечитать, а не полагаться на старый snapshot.
+
+Recrawl — адресное действие, а не универсальный ответ на падение позиций. Перед постановкой URL в очередь нужен конкретный исправленный/изменённый URL и evidence, почему новый crawl полезен; blanket recrawl всего сайта не используется как псевдорешение. Даже после подтверждённой отправки recrawl не объявляется гарантией indexing или ranking.
 
 ## Migration 1.x → 2.0.0
 

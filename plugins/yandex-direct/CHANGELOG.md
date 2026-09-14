@@ -2,6 +2,13 @@
 
 [**Русский**](CHANGELOG.md) · [English](CHANGELOG.en.md)
 
+## [2.2.0] — 2026-09-14
+
+- Добавлен practitioner-informed decision loop: бизнес-цель и сопоставимая база фиксируются до KPI-выводов; рекомендация проходит `наблюдение → гипотеза → проверка → действие → критерий эффекта`.
+- `RARELY_SERVED`, низкий объём и единичный слабый KPI больше не трактуются как самостоятельный сигнал удалить ключ; сначала проверяются интент, достаточность наблюдений и возможность консолидации совместимого редкого спроса.
+- Reporting/optimization guidance требует явного периода, attribution context и пересчёта коэффициентов из исходных сумм вместо усреднения CPA/CTR.
+- Эксперименты получают success/stop/revert criteria до consequential write; существующий `yandex-ai-approval/v2`, `--ack-bulk` и `yandex-ai-execution/v1` contract не ослабляется.
+
 ## [2.1.0] — 2026-09-05
 
 - Consequential Direct writes переведены на `yandex-ai-approval/v2`: exact service/method/environment/body, `Client-Login`, authenticated-principal binding, cardinality и safety capability входят в один approval digest.

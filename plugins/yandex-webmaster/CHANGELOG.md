@@ -2,6 +2,13 @@
 
 [**Русский**](CHANGELOG.md) · [English](CHANGELOG.en.md)
 
+## [2.2.0] — 2026-09-14
+
+- Диагностический workflow теперь начинает с актуальной host summary и требует повторного чтения volatile diagnostics/quota/task state перед решениями, зависящими от них.
+- Recrawl стал evidence-gated: нужен конкретный исправленный/изменённый URL и причина для нового crawl; blanket recrawl всего сайта не используется как ответ на падение позиций.
+- Сохраняется distinction crawl/index/search presence; успешная постановка в очередь не представляется как гарантия indexing или ranking.
+- Consequential recrawl/sitemap/site-management operations сохраняют `yandex-ai-approval/v2`, exact `preview_id`, later-turn approval, `--ack-bulk` и execution receipt semantics без ослабления safety.
+
 ## [2.1.0] — 2026-09-05
 
 - Consequential Webmaster calls переведены на `yandex-ai-approval/v2`: API version, exact request/target, OAuth authenticated-principal binding, credential-safe feed URL representation, cardinality и safety capability входят в approval digest.

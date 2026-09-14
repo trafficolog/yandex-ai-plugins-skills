@@ -2,6 +2,13 @@
 
 [Русский](CHANGELOG.md) · [**English**](CHANGELOG.en.md)
 
+## [2.2.0] — 2026-09-14
+
+- The diagnostic workflow now starts from a current host summary and re-reads volatile diagnostics/quota/task state before decisions that depend on it.
+- Recrawl is evidence-gated: identify the concrete fixed/changed URL and reason for a new crawl; blanket site-wide recrawl is not used as an answer to a ranking drop.
+- Crawl/index/search presence remain distinct; successful queue submission is not presented as a guarantee of indexing or ranking.
+- Consequential recrawl/sitemap/site-management operations preserve `yandex-ai-approval/v2`, exact `preview_id`, later-turn approval, `--ack-bulk`, and execution-receipt semantics without weakening safety.
+
 ## [2.1.0] — 2026-09-05
 
 - Consequential Webmaster calls now use `yandex-ai-approval/v2`: API version, exact request/target, OAuth authenticated-principal binding, credential-safe feed URL representation, cardinality, and safety capability are bound into the approval digest.

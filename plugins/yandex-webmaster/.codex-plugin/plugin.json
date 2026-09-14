@@ -1,10 +1,10 @@
 {
   "name": "yandex-webmaster",
   "description": "Skills for auditing and safely managing Yandex Webmaster using current 2026 API behavior.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {"name": "Trafficolog"},
   "license": "MIT",
   "keywords": ["yandex", "webmaster", "seo", "indexing", "search queries", "sitemaps", "recrawl"],
   "skills": "./skills/",
-  "interface": {"displayName":"Yandex Webmaster","shortDescription":"Audit SEO health and safely manage Yandex Webmaster.","longDescription":"Workflow-first skills for Yandex Webmaster diagnostics, indexing, search queries, recrawl, sitemaps, links, feeds, exports and low-level API operations with preview-before-write safety.","developerName":"Trafficolog","category":"SEO","capabilities":["Analysis","SEO","Reporting","Workflow"],"defaultPrompt":["Проведи аудит сайта в Яндекс Вебмастере.","Проанализируй поисковые запросы и падение показов.","Проверь индексацию и причины исключения страниц.","Подготовь безопасную отправку URL на переобход."],"brandColor":"#FFCC00"}
+  "interface": {"displayName":"Yandex Webmaster","shortDescription":"Audit SEO health and safely manage Yandex Webmaster.","longDescription":"Workflow-first skills for Yandex Webmaster diagnostics, indexing, search queries, recrawl, sitemaps, links, feeds, exports and low-level API operations with fresh-evidence recrawl triage and preview-before-write safety.","developerName":"Trafficolog","category":"SEO","capabilities":["Analysis","SEO","Reporting","Workflow"],"defaultPrompt":["Проведи аудит сайта в Яндекс Вебмастере.","Проанализируй поисковые запросы и падение показов.","Проверь индексацию и причины исключения страниц.","Подготовь безопасную отправку URL на переобход."],"brandColor":"#FFCC00"}
 }

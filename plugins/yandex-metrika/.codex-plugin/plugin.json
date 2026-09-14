@@ -1,10 +1,10 @@
 {
   "name": "yandex-metrika",
   "description": "Skills for auditing, reporting on, and safely managing Yandex Metrika using current 2026 API behavior.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {"name": "Trafficolog"},
   "license": "MIT",
   "keywords": ["yandex", "metrika", "analytics", "web analytics", "ecommerce", "logs", "attribution"],
   "skills": "./skills/",
-  "interface": {"displayName":"Yandex Metrika","shortDescription":"Audit, report and safely manage Yandex Metrika.","longDescription":"Workflow-first skills for Yandex Metrika reporting, conversions, ecommerce, attribution, goals, Logs API, imports and low-level API operations with quality metadata and preview-before-write safety.","developerName":"Trafficolog","category":"Analytics","capabilities":["Analysis","Analytics","Reporting","Workflow"],"defaultPrompt":["Проведи аудит счетчика Яндекс Метрики.","Сравни трафик и конверсии за два периода.","Проверь качество данных и семплирование отчета.","Подготовь безопасную загрузку офлайн-конверсий."],"brandColor":"#FFCC00"}
+  "interface": {"displayName":"Yandex Metrika","shortDescription":"Audit, report and safely manage Yandex Metrika.","longDescription":"Workflow-first skills for Yandex Metrika reporting, conversions, ecommerce, attribution, goals, Logs API and imports with business-goal framing, comparable-basis/PnL guardrails, quality metadata and preview-before-write safety.","developerName":"Trafficolog","category":"Analytics","capabilities":["Analysis","Analytics","Reporting","Workflow"],"defaultPrompt":["Проведи аудит счетчика Яндекс Метрики.","Сравни трафик и конверсии за два периода.","Проверь качество данных и семплирование отчета.","Подготовь безопасную загрузку офлайн-конверсий."],"brandColor":"#FFCC00"}
 }

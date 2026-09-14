@@ -1,10 +1,10 @@
 {
   "name": "yandex-search",
   "description": "SEO-first Yandex Search API v2 workflows for SERP retrieval, analysis and clustering.",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "author": {"name": "Trafficolog"},
   "license": "MIT",
   "keywords": ["yandex", "search", "serp", "seo", "rankings", "clustering"],
   "skills": "./skills/",
-  "interface": {"displayName":"Yandex Search","shortDescription":"Retrieve and analyze Yandex SERPs.","longDescription":"Workflow-first Yandex Search skills for classic web SERP retrieval, cost-aware batches, ranking/competitor analysis and real URL-overlap clustering.","developerName":"Trafficolog","category":"SEO","capabilities":["Search","SEO","Research","Analysis"],"defaultPrompt":["Покажи выдачу Яндекса по запросу.","Сравни позиции по двум снимкам SERP.","Кластеризуй запросы по пересечению URL."],"brandColor":"#FFCC00"}
+  "interface": {"displayName":"Yandex Search","shortDescription":"Retrieve and analyze Yandex SERPs.","longDescription":"Workflow-first Yandex Search skills for classic web SERP retrieval, cost-aware batches, ranking/competitor analysis, URL-overlap clustering, and bounded optional smart-snippet info context for semantic research.","developerName":"Trafficolog","category":"SEO","capabilities":["Search","SEO","Research","Analysis"],"defaultPrompt":["Покажи выдачу Яндекса по запросу.","Сравни позиции по двум снимкам SERP.","Кластеризуй запросы по пересечению URL."],"brandColor":"#FFCC00"}
 }

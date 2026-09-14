@@ -5,11 +5,11 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_PLUGINS = {
-    "yandex-direct": ("yandex-direct-suite", "2.1.0"),
-    "yandex-metrika": ("yandex-metrika", "2.1.0"),
-    "yandex-webmaster": ("yandex-webmaster", "2.1.0"),
-    "yandex-wordstat": ("yandex-wordstat", "1.1.2"),
-    "yandex-search": ("yandex-search", "1.0.2"),
+    "yandex-direct": ("yandex-direct-suite", "2.2.0"),
+    "yandex-metrika": ("yandex-metrika", "2.2.0"),
+    "yandex-webmaster": ("yandex-webmaster", "2.2.0"),
+    "yandex-wordstat": ("yandex-wordstat", "1.2.0"),
+    "yandex-search": ("yandex-search", "1.1.0"),
     "yandex-seo": ("yandex-seo", "1.2.0"),
     "yandex-marketing": ("yandex-marketing", "1.1.0"),
 }
@@ -50,12 +50,12 @@ class DocumentationUXGovernanceContractTests(unittest.TestCase):
                 for token in required_links:
                     self.assertIn(token, text)
 
-    def test_root_readmes_stage_current_repository_1_4_0(self):
+    def test_root_readmes_stage_current_repository_1_5_0(self):
         for filename in ("README.md", "README.en.md"):
             text = self._read(filename)
             with self.subTest(filename=filename):
-                self.assertIn("release-1.4.0", text)
-                self.assertIn("`1.4.0`", text)
+                self.assertIn("release-1.5.0", text)
+                self.assertIn("`1.5.0`", text)
                 for plugin, (_, version) in EXPECTED_PLUGINS.items():
                     row = [line for line in text.splitlines() if f"plugins/{plugin}/" in line]
                     self.assertTrue(row, plugin)

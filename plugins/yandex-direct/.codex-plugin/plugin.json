@@ -1,7 +1,7 @@
 {
   "name": "yandex-direct-suite",
   "description": "Skills for creating, auditing, reporting on, and safely optimizing Yandex Direct campaigns using current API v501 concepts.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {"name": "Community-derived, maintained for 2026 API behavior"},
   "license": "MIT",
   "keywords": ["yandex", "direct", "ppc", "реклама", "директ", "epc", "епк", "wordstat", "metrika"],
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Yandex Direct Suite",
     "shortDescription": "Create, audit, report and optimize Yandex Direct.",
-    "longDescription": "A skill-only workflow plugin for Yandex Direct. It separates campaign creation, auditing, reporting, keyword work, budget analysis, optimization, and low-level API operations, with read-first and preview-before-write safety rules.",
+    "longDescription": "A workflow-first Yandex Direct plugin with business-goal and comparability checks, rare-demand handling, experiment criteria, and exact-preview write safety across campaign creation, auditing, reporting, keyword work, budgets and optimization.",
     "developerName": "Community",
     "category": "Marketing",
     "capabilities": ["Analysis", "Advertising", "Reporting", "Workflow"],

@@ -4,6 +4,35 @@
 
 All notable repository-level changes are documented here. Plugins use independent SemVer and keep their own changelogs.
 
+## [1.5.0] — 2026-09-14
+
+Practitioner-informed release: five service plugins are strengthened with practical decision workflows reviewed from regularly used `artwist-polyakov/polyakov-claude-skills` at exact source SHA `f6a75133b3ad07e43991433c1d0a77f69c749f7b`.
+
+### Changed
+
+- Direct `2.2.0`: establish business objective and comparable data before KPI conclusions; rare/`RARELY_SERVED` demand is not automatically removed; recommendations follow observation → hypothesis → check → action → effect criteria.
+- Metrika `2.2.0`: separate business conversions from micro-events, retain zero-conversion rows in denominators, compare periods on a compatible attribution/data basis, and require compatible spend/revenue provenance for PnL/ROAS.
+- Search `1.1.0`: add an optional bounded smart-snippet/info-context synchronous mode with JSON normalization; ordinary sync/deferred SERP remains the default for rankings/batch/snapshots/clustering.
+- Webmaster `2.2.0`: re-read diagnostics/quota/task state as volatile evidence; recrawl requires a concrete fixed/changed URL and evidence instead of blanket recrawl.
+- Wordstat `1.2.0`: establish region and business offer before expansion, add intent classification plus selective Search validation of high-value/ambiguous clusters, and add missed-demand analysis against Direct semantics.
+- Added semantic eval scenarios that exercise practical decisions rather than only string presence in documentation.
+- Repaired a stale date-sensitive Project Memory test fixture; production Project Memory behavior is unchanged.
+- Historical release tests are decoupled from the current plugin matrix and now validate historical release surfaces as history instead of blocking future minor releases.
+
+### Safety and evidence boundary
+
+- The existing exact-preview contract is unchanged: `yandex-ai-approval/v2`, exact `preview_id`, later-turn approval, `--ack-bulk`, and `yandex-ai-execution/v1` remain mandatory where applicable.
+- External practitioner methodology supplements but does not replace official Yandex API contracts and is not evidence of causal or ranking effects.
+- P3 remains `INFRASTRUCTURE_READY`; this release adds no accepted live multi-model evidence for `COMPARATIVE_COMPLETE`.
+
+### Plugin releases
+
+Direct `2.2.0`, Metrika `2.2.0`, Search `1.1.0`, Webmaster `2.2.0`, Wordstat `1.2.0`.
+
+### Plugin versions unchanged
+
+SEO `1.2.0`, Marketing `1.1.0`.
+
 ## [1.4.0] — 2026-09-06
 
 P3 Benchmark Infrastructure is a repository-only release of the executable provider-neutral eval benchmark. The proven status is `INFRASTRUCTURE_READY`; accepted live multi-model evidence for `COMPARATIVE_COMPLETE` is not included in this release.

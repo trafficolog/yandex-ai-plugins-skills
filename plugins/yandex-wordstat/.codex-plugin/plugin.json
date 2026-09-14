@@ -1,10 +1,10 @@
 {
   "name": "yandex-wordstat",
   "description": "Workflow skills for Yandex Wordstat demand research using current Cloud Search API v2 behavior.",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "author": {"name": "Trafficolog"},
   "license": "MIT",
   "keywords": ["yandex", "wordstat", "seo", "semantics", "keywords", "demand", "trends", "topic-map"],
   "skills": "./skills/",
-  "interface": {"displayName":"Yandex Wordstat","shortDescription":"Research Yandex demand, semantics, topic maps, regions and trends.","longDescription":"Workflow-first Wordstat skills for semantic expansion, candidate topic maps, operator-aware frequency research, dynamics, regional affinity and trend analysis with provenance, quota and cost awareness.","developerName":"Trafficolog","category":"SEO","capabilities":["Analysis","SEO","Research","Reporting"],"defaultPrompt":["Собери семантику по теме через Wordstat.","Построй candidate topic map и сохрани provenance.","Проверь частотность и сезонность запросов.","Сравни спрос по регионам."],"brandColor":"#FFCC00"}
+  "interface": {"displayName":"Yandex Wordstat","shortDescription":"Research Yandex demand, semantics, topic maps, regions and trends.","longDescription":"Workflow-first Wordstat skills for semantic expansion, candidate topic maps, operator-aware frequency research, dynamics, regional affinity, intent verification, missed-demand discovery and trend analysis with provenance, quota and cost awareness.","developerName":"Trafficolog","category":"SEO","capabilities":["Analysis","SEO","Research","Reporting"],"defaultPrompt":["Собери семантику по теме через Wordstat.","Построй candidate topic map и сохрани provenance.","Проверь частотность и сезонность запросов.","Сравни спрос по регионам."],"brandColor":"#FFCC00"}
 }
