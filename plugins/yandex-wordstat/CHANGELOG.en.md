@@ -2,6 +2,14 @@
 
 [Русский](CHANGELOG.md) · [**English**](CHANGELOG.en.md)
 
+## [1.2.0] — 2026-09-14
+
+- Demand research now establishes region and the actual business offer before semantic expansion; `results` and noisier `associations` have distinct roles.
+- Added practitioner intent classes `TARGET` / `ADJACENT` / `INFORMATIONAL` / `NAVIGATIONAL` / `AMBIGUOUS`; high-value and ambiguous clusters route to Search evidence verification.
+- Search validation is applied selectively to important/ambiguous clusters instead of mechanically to every row in a large semantic set.
+- Added a missed-demand workflow relative to current Direct semantics; overlap/no-sum rules remain, so phrase counts are not turned into invented total market demand.
+- The Phase 7 candidate-only boundary remains: Wordstat does not prove final SERP clusters or page boundaries.
+
 ## [1.1.2] — 2026-09-03
 
 - `wordstat-topic-map/v1` now normalizes query text with Unicode NFKC + casefold + whitespace folding, matching conservative cross-service SEO query joining.
